@@ -26,6 +26,12 @@ const CallScreen: React.FC<CallScreenProps> = ({ questions, isCallConnected }) =
     }
   }, [isCallConnected]);
 
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   const startVideoStream = async () => {
     try {
       // Step 1: Create a new session
@@ -89,15 +95,15 @@ const CallScreen: React.FC<CallScreenProps> = ({ questions, isCallConnected }) =
           </div>
           <div className="flex flex-col h-full">
             {isCallConnected ? (
-                  <video 
-                    ref={videoRef} 
-                    autoPlay 
-                    playsInline 
-                    className="mx-auto rounded-lg shadow-lg" 
-                  />
-                ) : (
-                  <p>Connecting to call...</p>
-                )}
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="mx-auto rounded-lg shadow-lg"
+              />
+            ) : (
+              <p>Connecting to call...</p>
+            )}
           </div>
         </div>
         {isChatOpen && (
@@ -105,7 +111,8 @@ const CallScreen: React.FC<CallScreenProps> = ({ questions, isCallConnected }) =
             <h2 className="text-xl font-bold mb-4">Chat</h2>
             <motion.div
               layoutScroll
-              className="grow rounded-md overflow-auto"
+              className="grow rounded-md overflow-y-auto"
+              style={{ maxHeight: "85vh" }}
               ref={chatRef}
             >
               <motion.div className="max-w-full mx-auto w-full flex flex-col gap-4 pb-4">
