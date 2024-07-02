@@ -6,11 +6,28 @@ import { Mic, MicOff, Phone } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Toggle } from "./ui/toggle";
 import MicFFT from "./MicFFT";
+import { useCallback, useEffect, useState } from "react";
 
 import "../styles/globals.css";
 
 export default function Controls() {
-  const { disconnect, status, isMuted, unmute, mute, micFft } = useVoice();
+  const { disconnect, status, isMuted, unmute, mute, micFft, sendUserInput  } = useVoice();
+  const [isFirstConnection, setIsFirstConnection] = useState(true);
+
+  const sendInitialGreeting = useCallback(() => {
+    sendUserInput("Hello");
+  }, [sendUserInput]);
+
+  useEffect(() => {
+    if (status.value === "connected" && isFirstConnection) {
+      setTimeout(() => {
+        alert("hello");
+        sendInitialGreeting();
+        setIsFirstConnection(false);
+      }, 2000);
+    }
+  }, [status.value, isFirstConnection, sendInitialGreeting]);
+
 
   return (
     <div
