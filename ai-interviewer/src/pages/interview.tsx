@@ -10,9 +10,8 @@ const Interview = () => {
   useEffect(() => {
     const fetchToken = async () => {
       // make sure to set these environment variables
-      const apiKey = "hzTh1f0x6mm1N0i1GjkbKHFWXilJ7SpsEPbarRkadr7CqjZg" || '';
-      const secretKey = "dE1MTZ6dGpd7o9QVhfGLSLM36RKnmeKQ98GIh1r8RcmOEVv5lJSyuvrunGLy0tGA" || '';
-
+      const apiKey = "5clXGcclSBXfhERWNWBYx9GOgnPvzAruKJ3F5q6zJUbEui4j" || '';
+      const secretKey = "uEVxLCKRPfMgkR6O5vNUtZ8GRLSVANAW7HwOAtiVfEu6UrwIbbMFyRa4nMiFfm09" || '';
       const token = (await fetchAccessToken({ apiKey, secretKey })) || '';
 
       setAccessToken(token);
@@ -25,7 +24,7 @@ const Interview = () => {
     <div>
         <VoiceProvider
           auth={{ type: 'accessToken', value: accessToken }}
-          configId={'25eb0fea-d9e4-40da-86be-c0e01acd0efd'} // set your configId here
+          configId={'db67e040-5345-4f4d-8157-3406b87d853f'} // set your configId here
         >
           <ResumeUploader />
         </VoiceProvider>
