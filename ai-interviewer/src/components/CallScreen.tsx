@@ -1,4 +1,3 @@
-// components/CallScreen.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import Controls from './Controls';
 import { FiMoreVertical } from 'react-icons/fi';
@@ -6,6 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useVoice } from "@humeai/voice-react";
 import { cn } from "@/lib/utils";
 import { processVideoFrame } from "@/utils/videoProcessing";
+import RemoveGreenBackground from './RemoveGreenBackground';
+
 
 interface CallScreenProps {
   questions: string[];
@@ -19,6 +20,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ questions, isCallConnected }) =
   const videoRef = useRef<HTMLVideoElement>(null);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
     if (isCallConnected) {
@@ -39,36 +41,69 @@ const CallScreen: React.FC<CallScreenProps> = ({ questions, isCallConnected }) =
         method: 'POST',
       });
       const sessionData = await sessionResponse.json();
+      console.log('Session Data:', sessionData); // Log the session data
       setSessionId(sessionData.session_id);
-
-      // Step 2: Create and set up RTCPeerConnection
-      const pc = new RTCPeerConnection({ iceServers: sessionData.ice_servers2 });
-      setPeerConnection(pc);
-
-      pc.ontrack = (event) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = event.streams[0] ?? null;
+  
+      // Transform ice_servers to the correct format
+      const iceServers = sessionData.ice_servers.map(server => {
+        if (typeof server === 'string') {
+          return { urls: server };
         }
+        return server;
+      });
+  
+      // Validate ice_servers2 structure
+      const iceServers2 = sessionData.ice_servers2.map(server => {
+        console.log('Server:', server); // Log each server for debugging
+  
+        if (typeof server.urls === 'string' || Array.isArray(server.urls)) {
+          // Convert single URL string to array
+          if (typeof server.urls === 'string') {
+            server.urls = [server.urls];
+          }
+        } else {
+          throw new Error('Invalid ice_server urls format');
+        }
+  
+        if (server.username && typeof server.username !== 'string') {
+          throw new Error('Invalid ice_server username format');
+        }
+        if (server.credential && typeof server.credential !== 'string') {
+          throw new Error('Invalid ice_server credential format');
+        }
+        return server;
+      });
+  
+      // Combine the two arrays
+      const combinedIceServers = [...iceServers, ...iceServers2];
+      console.log('Combined ice_servers:', combinedIceServers);
+  
+      // Step 2: Create and set up RTCPeerConnection
+      const pc = new RTCPeerConnection({ iceServers: combinedIceServers });
+      setPeerConnection(pc);
+  
+      pc.ontrack = (event) => {
+        setStream(event.streams[0] ?? null);
       };
-
+  
       // Step 3: Set remote description
       await pc.setRemoteDescription(new RTCSessionDescription(sessionData.sdp));
-
+  
       // Step 4: Create and set local description
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-
+  
       // Step 5: Start the stream
       const startResponse = await fetch('/api/start-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionData.session_id, sdp: answer }),
       });
-
+  
       if (!startResponse.ok) {
         throw new Error('Failed to start stream');
       }
-
+  
       // Step 6: Handle ICE candidates
       pc.onicecandidate = ({ candidate }) => {
         if (candidate) {
@@ -79,12 +114,16 @@ const CallScreen: React.FC<CallScreenProps> = ({ questions, isCallConnected }) =
           });
         }
       };
-
+  
       console.log("Video stream started successfully");
     } catch (error) {
       console.error('Error starting video stream:', error);
     }
   };
+  
+  
+  
+  
 
   return (
     <div className="h-screen overflow-hidden bg-gray-100 p-10 flex flex-col">
@@ -95,12 +134,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ questions, isCallConnected }) =
           </div>
           <div className="flex flex-col h-full">
             {isCallConnected ? (
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="mx-auto rounded-lg shadow-lg"
-              />
+              <RemoveGreenBackground stream={stream} />
             ) : (
               <p>Connecting to call...</p>
             )}

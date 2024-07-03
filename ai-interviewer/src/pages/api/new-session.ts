@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { type NextApiRequest, type NextApiResponse } from 'next';
 
 const SERVER_URL = process.env.HEYGEN_API_URL;
 const API_KEY = process.env.HEYGEN_API_KEY;
@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Api-Key': API_KEY as string,
+          'X-Api-Key': API_KEY!,
         },
         body: JSON.stringify({
           quality: 'high',
@@ -26,6 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const data = await response.json();
+      console.log("new session logged data: ",data)
       res.status(200).json(data.data);
     } catch (error) {
       console.error('Error creating new session:', error);
