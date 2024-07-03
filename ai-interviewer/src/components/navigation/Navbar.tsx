@@ -1,5 +1,6 @@
 import { CircleUser, Menu, Package2, Search } from "lucide-react";
 import Link from "next/link";
+import React from "react";
 
 import {
   DropdownMenu,
@@ -12,48 +13,48 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import '../../styles/globals.css';
 
 const Navbar = () => {
   return (
-    <header>
+    <header className="flex flex-row justify-between items-center w-full text-xl p-12 font-semibold">
       <Link
         href="https://ai-interviewer.framer.website/"
         className="flex items-center gap-2"
         prefetch={false}
       >
-        <div className="text-white">AI Interviewer</div>
+        <div className="">AI Interviewer</div>
       </Link>
       <nav className="flex items-center gap-4 space-x-4">
         <Link
           href="/"
-          className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold text-white transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
+          className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold  transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
           prefetch={false}
         >
           Dashboard
         </Link>
         <Link
           href="/interview"
-          className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold text-white transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
+          className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold  transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
           prefetch={false}
         >
           Interview
         </Link>
         <Link
           href="/settings" // Update the link to point to the correct path
-          className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold text-white transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
+          className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold  transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
           prefetch={false}
         >
           Settings
         </Link>
         <Link
           href="/help"
-          className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold text-white transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
+          className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold  transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
           prefetch={false}
         >
           Help
         </Link>
       </nav>
+    
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -100,7 +101,7 @@ const Navbar = () => {
           </nav>
         </SheetContent>
       </Sheet>
-      <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+      <div className="flex items-center gap-4 lg:gap-4">
         <form className="ml-auto flex-1 sm:flex-initial">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
