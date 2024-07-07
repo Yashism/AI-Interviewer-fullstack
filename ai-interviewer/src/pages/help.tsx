@@ -1,4 +1,5 @@
 import Navbar from "@/components/navigation/Navbar";
+import "../styles/globals.css"
 import {
   Card,
   CardContent,
@@ -11,8 +12,9 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { FaqElement } from "@/components/F&q";
 
-const help = () => (
+ export const help = () => (
   <div className="flex flex-col gap-10">
     <Navbar />
     <div></div>
@@ -53,6 +55,9 @@ const help = () => (
           <Button>Send</Button>
         </CardFooter>
       </Card>
+      <div className="mt-5 mb-5">
+      <Card> <FaqElement/></Card>
+      </div>
     </div>
   </div>
 );
