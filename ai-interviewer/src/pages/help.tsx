@@ -48,15 +48,15 @@ import { FaqElement } from "@/components/F&q";
             >
               Message
             </label>
-            <Input placeholder="Your Message" />
+            <textarea placeholder="Your Message" className="resize-y p-2 border rounded-md h-32 focus:border-black" />
           </form>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
-          <Button>Send</Button>
+          <Button className="w-32">Send</Button>
         </CardFooter>
       </Card>
-      <div className="mt-5 mb-5">
-      <Card> <FaqElement/></Card>
+      <div className="mt-8 mb-5 shadow-lg">
+       <FaqElement/>
       </div>
     </div>
   </div>
