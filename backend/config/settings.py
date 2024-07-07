@@ -44,6 +44,7 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "drf_yasg"
+    # "corsheaders"
 
 ]
 

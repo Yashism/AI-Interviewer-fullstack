@@ -1,10 +1,21 @@
 import { create } from "zustand";
 
-const useStore = create((set) => ({
-  bears: 0,
-  
+export interface UserData {
+  id: string;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+}
 
-  increasePopulation: () => set((state: any) => ({ bears: state.bears + 1 })),
-  removeAllBears: () => set({ bears: 0 }),
-  updateBears: (newBears: any) => set({ bears: newBears }),
+const useStore = create((set) => ({
+  userData: {
+    id: "",
+    username: "",
+    email: "",
+    first_name: "",
+    last_name: "",
+  },
+
+  setUserData: (userData: any) => set({ userData }),
 }));

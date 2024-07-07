@@ -1,7 +1,8 @@
+"use client";
+
 import { CircleUser, Menu, Package2, Search } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +16,18 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Navbar = () => {
+  const handleSignout = () => {
+    // delete the token from the local storage
+    localStorage.removeItem("accessToken");
+
+    //check if the user is logged out
+    
+    //refresh the page
+    window.location.reload();
+  };
+
   return (
-    <header className="flex flex-row justify-between items-center w-full text-xl p-12 font-semibold">
+    <header className="flex w-full flex-row items-center justify-between p-12 text-xl font-semibold">
       <Link
         href="https://ai-interviewer.framer.website/"
         className="flex items-center gap-2"
@@ -54,7 +65,7 @@ const Navbar = () => {
           Help
         </Link>
       </nav>
-    
+
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -125,7 +136,9 @@ const Navbar = () => {
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignout}>
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
