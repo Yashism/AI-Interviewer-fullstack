@@ -16,7 +16,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Navbar = () => {
   return (
-    <header className="flex flex-row justify-between items-center w-full text-xl p-12 font-semibold">
+    <header className="flex flex-row justify-between items-center w-full text-xl p-12 font-semibold"  style={{ position: "sticky", top: 0, zIndex: 1000, backgroundColor: "white" }}>
       <Link
         href="https://ai-interviewer.framer.website/"
         className="flex items-center gap-2"
