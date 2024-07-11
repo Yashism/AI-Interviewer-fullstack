@@ -45,11 +45,11 @@ class ResumeVectorStore:
     def as_retriever(self):
         return self.create_vector_store().as_retriever()
 
-persist_directory = "./chroma_db"
+persist_directory = "./ml/chroma_db"
 resume_store = ResumeVectorStore(collection_name="resumes", persist_directory=persist_directory)
 
 # Upsert a resume for a user
-user1_resume_path = "./data/resume.pdf"
+user1_resume_path = "./ml/data/Resume.pdf"
 resume_store.upsert_resume(user_name="user1", resume_path=user1_resume_path)
 
 # Get a user's resume
@@ -61,8 +61,21 @@ for chunk in user1_resume:
 vector_store = resume_store.create_vector_store()
 print("There are", vector_store._collection.count(), "documents in the collection")
 
+# Upsert a resume for a user2
+user2_resume_path = "./ml/data/pr.pdf"
+resume_store.upsert_resume(user_name="user2", resume_path=user2_resume_path)
+
+# Get a user's resume
+user2_resume :list[Document] = resume_store.get_user_resume(user_name="user2")
+for chunk in user2_resume:
+    print(chunk.page_content)
+
+# Create a vector store
+vector_store = resume_store.create_vector_store()
+print("There are", vector_store._collection.count(), "documents in the collection")
+
 # Perform similarity search
-query = "relevant skills"
+query = ""
 docs = vector_store.similarity_search(query=query, k=3)
 print("-----------------------------")
 for doc in docs:
