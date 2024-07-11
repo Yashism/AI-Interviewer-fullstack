@@ -21,7 +21,6 @@ export default function Controls() {
   useEffect(() => {
     if (status.value === "connected" && isFirstConnection) {
       setTimeout(() => {
-        alert("hello");
         sendInitialGreeting();
         setIsFirstConnection(false);
       }, 2000);
