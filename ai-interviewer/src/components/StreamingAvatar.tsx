@@ -18,6 +18,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import StreamingAvatarTextInput from "./StreamingAvatarTextInput";
 import RemoveGreenBackground from './RemoveGreenBackground';
 import Controls from "./Controls";
+import { MicrophoneContextProvider } from "../context/MicrophoneContextProvider";
+import { DeepgramContextProvider } from "../context/DeepgramContextProvider";
 
 
 const openai = new OpenAI({
@@ -25,7 +27,7 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true,
 });
 
-export default function StreamingAvatar() {
+export default function   StreamingAvatar() {
   const [isLoadingSession, setIsLoadingSession] = useState(false);
   const [isLoadingRepeat, setIsLoadingRepeat] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
@@ -58,6 +60,7 @@ export default function StreamingAvatar() {
           taskRequest: { text: message.content, sessionId: data?.sessionId },
         })
         .catch((e) => {
+          console.error(`Error in streamingAvatar - ${e}`);
           setDebug(e.message);
         });
       setIsLoadingChat(false);
@@ -340,34 +343,34 @@ export default function StreamingAvatar() {
                 }}
                 setInput={setInput}
                 loading={isLoadingChat}
-                endContent={
-                  <Tooltip
-                    content={!recording ? "Start recording" : "Stop recording"}
-                  >
-                    <Button
-                      onClick={!recording ? startRecording : stopRecording}
-                      isDisabled={!stream}
-                      isIconOnly
-                      className={clsx(
-                        "mr-4 text-white",
-                        !recording
-                          ? "bg-gradient-to-tr from-indigo-500 to-indigo-300"
-                          : ""
-                      )}
-                      size="sm"
-                      variant="shadow"
-                    >
-                      {!recording ? (
-                        <Microphone size={20} />
-                      ) : (
-                        <>
-                          <div className="absolute h-full w-full bg-gradient-to-tr from-indigo-500 to-indigo-300 animate-pulse -z-10"></div>
-                          <MicrophoneStage size={20} />
-                        </>
-                      )}
-                    </Button>
-                  </Tooltip>
-                }
+                // endContent={
+                //   <Tooltip
+                //     content={!recording ? "Start recording" : "Stop recording"}
+                //   >
+                //     <Button
+                //       onClick={!recording ? startRecording : stopRecording}
+                //       isDisabled={!stream}
+                //       isIconOnly
+                //       className={clsx(
+                //         "mr-4 text-white",
+                //         !recording
+                //           ? "bg-gradient-to-tr from-indigo-500 to-indigo-300"
+                //           : ""
+                //       )}
+                //       size="sm"
+                //       variant="shadow"
+                //     >
+                //       {!recording ? (
+                //         <Microphone size={20} />
+                //       ) : (
+                //         <>
+                //           <div className="absolute h-full w-full bg-gradient-to-tr from-indigo-500 to-indigo-300 animate-pulse -z-10"></div>
+                //           <MicrophoneStage size={20} />
+                //         </>
+                //       )}
+                //     </Button>
+                //   </Tooltip>
+                // }
                 disabled={!stream}
               />
             </motion.div>
@@ -375,7 +378,11 @@ export default function StreamingAvatar() {
         </AnimatePresence>
       </div>
       <div className="mt-auto">
-        <Controls />
+        <DeepgramContextProvider>
+          <MicrophoneContextProvider>
+            {stream && <Controls/> }            
+          </MicrophoneContextProvider>
+        </DeepgramContextProvider>
       </div>
     </div>
   );
