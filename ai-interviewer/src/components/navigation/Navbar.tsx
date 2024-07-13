@@ -1,6 +1,7 @@
 import { CircleUser, Menu, Package2, Search } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 import {
   DropdownMenu,
@@ -15,13 +16,39 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Navbar = () => {
+  const { theme } = useTheme();
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (typeof window !== 'undefined') {
+        if (window.scrollY > lastScrollY) {
+          setIsVisible(false);
+        } else {
+          setIsVisible(true);
+        }
+        setLastScrollY(window.scrollY);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', controlNavbar);
+      return () => {
+        window.removeEventListener('scroll', controlNavbar);
+      };
+    }
+  }, [lastScrollY]);
   return (
-    <header className="flex flex-row justify-between items-center w-full text-xl p-12 font-semibold"  style={{ position: "sticky", top: 0, zIndex: 1000, backgroundColor: "white" }}>
+    <header className={`flex flex-row justify-between items-center w-full text-xl p-12 font-semibold transition-all duration-300 ${
+      isVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}  style={{ position: "sticky", top: 0, zIndex: 1000}}>
       <Link
         href="https://ai-interviewer.framer.website/"
         className="flex items-center gap-2"
         prefetch={false}
       >
+        {/* hsl(240 10% 3.9%) */}
         <div className="">AI Interviewer</div>
       </Link>
       <nav className="flex items-center gap-4 space-x-4">
@@ -102,16 +129,6 @@ const Navbar = () => {
         </SheetContent>
       </Sheet>
       <div className="flex items-center gap-4 lg:gap-4">
-        <form className="ml-auto flex-1 sm:flex-initial">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search products..."
-              className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-            />
-          </div>
-        </form>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">

@@ -111,7 +111,7 @@ export default function ResumeUploader() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-3xl rounded-lg bg-white p-6 shadow-xl">
+      <div className="w-full max-w-3xl rounded-lg bg-white p-6 shadow-xl dark:bg-black">
         <div className="flex justify-between">
           <div className="w-1/2 pr-4 flex flex-col">
             <h2 className="mb-4 text-xl grow-0 font-bold text-center">Add your resume below</h2>

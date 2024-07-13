@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from "next-themes";
 import { fetchAccessToken } from '@humeai/voice';
 import { VoiceProvider } from '@humeai/voice-react';
 import "../styles/globals.css"
@@ -7,6 +8,7 @@ import Navbar from '@/components/navigation/Navbar';
 
 const Interview = () => {
   const [accessToken, setAccessToken] = useState('');
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -22,9 +24,9 @@ const Interview = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen ">
       <Navbar/>
-    <div className="flex flex-grow items-center justify-center">
+    <div className="flex flex-grow items-center justify-center ">
         <VoiceProvider
           auth={{ type: 'accessToken', value: accessToken }}
           configId={'db67e040-5345-4f4d-8157-3406b87d853f'} // set your configId here

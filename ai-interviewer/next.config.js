@@ -8,6 +8,11 @@ const config = {
       },
     ];
   },
+  // Add this to enable App Router
+  experimental: {
+    // @ts-ignore
+    appDir: true,
+  },
 };
 
 export default config;

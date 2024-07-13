@@ -1,4 +1,5 @@
 import Navbar from "@/components/navigation/Navbar";
+import { useTheme } from "next-themes";
 import "../styles/globals.css"
 import {
   Card,
@@ -13,8 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { FaqElement } from "@/components/F&q";
+import { ModeToggle } from "@/app/_components/toggle";
 
- export const help = () => (
+ export const help = () =>  { 
+  const { theme } = useTheme();
+  return  (
   <div className="flex flex-col gap-10">
     <Navbar />
     <div></div>
@@ -48,7 +52,7 @@ import { FaqElement } from "@/components/F&q";
             >
               Message
             </label>
-            <textarea placeholder="Your Message" className="resize-y p-2 border rounded-md h-32 focus:border-black" />
+            <textarea placeholder="Your Message" className="resize-y p-2 border rounded-md h-32 focus:border-black dark:focus:border-black dark" />
           </form>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
@@ -61,5 +65,5 @@ import { FaqElement } from "@/components/F&q";
     </div>
   </div>
 );
-
+}
 export default help;
