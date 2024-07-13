@@ -27,7 +27,7 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true,
 });
 
-export default function   StreamingAvatar() {
+export default function  StreamingAvatar() {
   const [isLoadingSession, setIsLoadingSession] = useState(false);
   const [isLoadingRepeat, setIsLoadingRepeat] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
@@ -45,7 +45,10 @@ export default function   StreamingAvatar() {
   const avatar = useRef<StreamingAvatarApi | null>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
-  const { input, setInput, handleSubmit } = useChat({
+
+  const [finalTranscript, setFinalTranscript] = useState<string>("");
+
+  const { handleSubmit } = useChat({
     onFinish: async (message) => {
       console.log("ChatGPT Response:", message);
 
@@ -71,6 +74,11 @@ export default function   StreamingAvatar() {
         role: "system",
         content: "You are a helpful assistant.",
       },
+      {
+        id: "2",
+        role: "user",
+        content: finalTranscript,
+      },
     ],
   });
 
@@ -82,11 +90,11 @@ export default function   StreamingAvatar() {
     }
   }, [stream]);
 
-  useEffect(() => {
-    if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }
-  }, [input]);
+  // useEffect(() => {
+  //   if (chatRef.current) {
+  //     chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  //   }
+  // }, [input]);
 
   const toggleChat = useCallback(() => {
     setIsChatOpen(prevState => !prevState);
@@ -332,16 +340,17 @@ export default function   StreamingAvatar() {
               <StreamingAvatarTextInput
                 label=""
                 placeholder="Chat"
-                input={input}
+                input={finalTranscript}
                 onSubmit={() => {
                   setIsLoadingChat(true);
-                  if (!input) {
+                  if (!finalTranscript) {
                     setDebug("Please enter text to send to ChatGPT");
                     return;
                   }
                   handleSubmit();
+                  setFinalTranscript("");
                 }}
-                setInput={setInput}
+                setInput={setFinalTranscript}
                 loading={isLoadingChat}
                 // endContent={
                 //   <Tooltip
@@ -380,7 +389,7 @@ export default function   StreamingAvatar() {
       <div className="mt-auto">
         <DeepgramContextProvider>
           <MicrophoneContextProvider>
-            {stream && <Controls/> }            
+            {stream && <Controls finalTranscript={finalTranscript} setFinalTranscript={setFinalTranscript} handleSubmit={handleSubmit} /> }            
           </MicrophoneContextProvider>
         </DeepgramContextProvider>
       </div>

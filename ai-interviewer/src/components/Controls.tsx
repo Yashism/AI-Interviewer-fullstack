@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Mic, MicOff, Phone } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Toggle } from "./ui/toggle";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import {
   CONNECTION_STATE,
   LiveTranscriptionEvent,
@@ -17,17 +17,26 @@ import {
   useMicrophone,
 } from "../context/MicrophoneContextProvider";
 import Visualizer from "./Visualizer";
-import MicFFT from "./MicFFT";
+// import MicFFT from "./MicFFT";
 
 import "../styles/globals.css";
 
-export default function Controls() {
+interface ControlsProps {
+  finalTranscript: string;
+  setFinalTranscript: (transcript: string) => void;
+  handleSubmit: () => void;
+}
+
+export default function Controls({ finalTranscript, setFinalTranscript, handleSubmit }: ControlsProps) {
   const [isFirstConnection, setIsFirstConnection] = useState(true);
   const [caption, setCaption] = useState<string | undefined>(
     "Powered by AI-INTERVIEWER"
   );
-  const { connection, connectToDeepgram, connectionState } = useDeepgram();
+  const { connection, connectToDeepgram, disconnectFromDeepgram, connectionState } = useDeepgram();
   const { setupMicrophone, microphone, startMicrophone, stopMicrophone, microphoneState } = useMicrophone();
+
+  const finalTranscriptRef = useRef<string>("");
+  const prevTranscriptRef = useRef<string>("");
 
   const sendInitialGreeting = useCallback(() => {
     // TODO: Implement sending initial greeting with Deepgram
@@ -44,9 +53,17 @@ export default function Controls() {
         interim_results: true,
         smart_format: true,
         filler_words: false,
-        utterance_end_ms: 3000,
+        utterance_end_ms: 4000, // looks @ transcripts
+        endpointing: 1500 // looks @ audio signal
       });
+      console.log("connected to deepgram");
+
+      console.log(`connection = ${connection}`);
+      connection?.keepAlive();
+
     }
+
+
   }, [microphoneState]);
 
   useEffect(() => {
@@ -56,22 +73,52 @@ export default function Controls() {
     const onData = (e: BlobEvent) => {
       if (e.data.size > 0) {
         connection?.send(e.data);
+        // console.log(`sent ${JSON.stringify(e)}`);
       }
     };
 
     const onTranscript = (data: LiveTranscriptionEvent) => {
       const { is_final: isFinal, speech_final: speechFinal } = data;
-      let thisCaption = data.channel.alternatives[0].transcript;
+      const thisCaption = data?.channel?.alternatives[0]?.transcript;
 
       if (thisCaption !== "") {
+        // console.log(`thisCaption = ${thisCaption}`);
         setCaption(thisCaption);
       }
 
-      if (isFinal && speechFinal) {
-        setTimeout(() => {
-          setCaption(undefined);
-        }, 3000);
+      // fetching interim results
+      if (isFinal) {
+        finalTranscriptRef.current += " " + thisCaption;
+        console.log(`finalTranscriptRef = ${finalTranscriptRef.current}`);
       }
+      
+      if (prevTranscriptRef.current === finalTranscriptRef.current) {
+        setFinalTranscript(finalTranscriptRef.current.trim());
+        finalTranscriptRef.current = "";
+        stopMicrophone();
+        handleSubmit();
+      } else {
+        prevTranscriptRef.current = finalTranscriptRef.current;
+      }
+
+      // endpoint is reached
+
+      // 🔴🔴 not working 🔴🔴
+
+      // if (speechFinal) {
+      //   setFinalTranscript(finalTranscriptRef.current.trim());
+      //   console.log(`finalTranscript = ${finalTranscript}`);
+      //   finalTranscriptRef.current = "";
+      // }
+
+      // if (isFinal && speechFinal) {
+      //   setTimeout(() => {
+      //     setCaption(undefined);
+      //     console.log("clearing caption");
+      //   }, 3000);
+      // }
+
+
     };
 
     if (connectionState == CONNECTION_STATE.Open) {
@@ -83,7 +130,9 @@ export default function Controls() {
 
     return () => {
       connection.removeListener(LiveTranscriptionEvents.Transcript, onTranscript);
-      microphone.removeEventListener(MicrophoneEvents.DataAvailable, onData);
+      // microphone.removeEventListener(MicrophoneEvents.DataAvailable, onData);
+      console.log("removed event listeners");
+
     };
   }, [connectionState]);
 
@@ -95,8 +144,9 @@ export default function Controls() {
         )
       }
     >
+      <p style={{ backgroundColor: "black", color: "white" }}>{finalTranscriptRef.current}</p>
       <AnimatePresence>
-        {/* {connectionState === CONNECTION_STATE.Open ? ( */}
+        {connectionState === CONNECTION_STATE.Open ? (
           <motion.div
             initial={{
               y: "100%",
@@ -134,10 +184,10 @@ export default function Controls() {
             <div className={"relative grid h-8 w-48 shrink grow-0"}>
               {microphoneState === MicrophoneState.Open && (
                 <motion.div
-                initial={{opacity : 0}}
-                animate={{opacity : 1}}
-                exit={{opacity : 0}}
-                className={"fill-current"}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className={"fill-current"}
                 >
                   <Visualizer microphone={microphone} />
                 </motion.div>
@@ -148,6 +198,7 @@ export default function Controls() {
               className={"flex items-center gap-1"}
               onClick={() => {
                 connection?.finish();
+                disconnectFromDeepgram();
               }}
               variant={"destructive"}
             >
@@ -161,7 +212,9 @@ export default function Controls() {
               <span>End Call</span>
             </Button>
           </motion.div>
-        {/* ) : null} */}
+        ) : (
+          <p>Connection State closed - {connectionState === CONNECTION_STATE.Closed ? "true" : "false"}</p>
+        )}
       </AnimatePresence>
     </div>
   );
