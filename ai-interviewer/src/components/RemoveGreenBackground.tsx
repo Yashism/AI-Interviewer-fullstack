@@ -13,7 +13,7 @@ const RemoveGreenBackground: React.FC<RemoveGreenBackgroundProps> = ({ stream })
 
   useEffect(() => {
     // Load background image
-    imageRef.current.src = 'http://localhost:3000/background.png' // Change to white background
+    imageRef.current.src = 'http://localhost:3000/white.png' // Change to white background
     imageRef.current.onload = () => {
       imageLoaded.current = true;
   
@@ -76,7 +76,12 @@ const RemoveGreenBackground: React.FC<RemoveGreenBackgroundProps> = ({ stream })
     }
   }, [stream, imageLoaded.current]);
 
-  return <canvas ref={canvasRef} width="600" height="480" style={{ display: 'block' }}></canvas>;
+  return <canvas ref={canvasRef} width="1080" height="1080" style={{ display: 'block',
+  maxWidth: '100%',
+  maxHeight: '100%',
+  width: 'auto',
+  height: 'auto',
+  objectFit: 'contain'}}></canvas>;
 };
 
 export default RemoveGreenBackground;

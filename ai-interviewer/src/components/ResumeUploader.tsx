@@ -3,10 +3,9 @@ import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import upload from "../../public/upload.svg";
-import { useVoice } from "@humeai/voice-react";
 import { Button } from "./ui/button";
 import { Phone } from "lucide-react";
-import CallScreen from "./CallScreen";
+import StreamingAvatar from "./StreamingAvatar";
 
 interface UploadedFile {
   name: string;
@@ -56,7 +55,6 @@ export default function ResumeUploader() {
   };
   
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-  const { status, connect } = useVoice();
 
   const generateQuestions = async () => {
     if (!uploadedFile || !resumeText) {
@@ -92,20 +90,11 @@ export default function ResumeUploader() {
     //   alert('Please upload a resume and generate questions first.');
     //   return;
     // }
-
-    connect()
-      .then(() => {
-        console.log('Call connected');
-        setIsCallConnected(true);
-        setShowCallScreen(true);
-      })
-      .catch((error) => {
-        console.error('Error connecting call:', error);
-      });
+    setShowCallScreen(true);
   };
 
   if (showCallScreen) {
-    return <CallScreen questions={questions} isCallConnected={isCallConnected} />;
+    return <StreamingAvatar />;
   }
 
 
