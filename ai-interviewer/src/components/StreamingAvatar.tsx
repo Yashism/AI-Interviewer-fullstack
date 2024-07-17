@@ -6,49 +6,46 @@ import {
 import {
   Button,
   Spinner,
-  Tooltip,
 } from "@nextui-org/react";
-import { Microphone, MicrophoneStage } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChat } from "ai/react";
-import clsx from "clsx";
 import OpenAI from "openai";
 import { FiMoreVertical } from 'react-icons/fi';
 import { useEffect, useRef, useState, useCallback } from "react";
-import StreamingAvatarTextInput from "./StreamingAvatarTextInput";
 import RemoveGreenBackground from './RemoveGreenBackground';
 import Controls from "./Controls";
 import { MicrophoneContextProvider } from "../context/MicrophoneContextProvider";
 import { DeepgramContextProvider } from "../context/DeepgramContextProvider";
-
 
 const openai = new OpenAI({
   apiKey: "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",
   dangerouslyAllowBrowser: true,
 });
 
-export default function  StreamingAvatar() {
+export default function StreamingAvatar() {
   const [isLoadingSession, setIsLoadingSession] = useState(false);
-  const [isLoadingRepeat, setIsLoadingRepeat] = useState(false);
-  const [isLoadingChat, setIsLoadingChat] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const chatRef = useRef<HTMLDivElement>(null);
   const [stream, setStream] = useState<MediaStream>();
   const [debug, setDebug] = useState<string>();
-  const [avatarId, setAvatarId] = useState<string>("");
-  const [voiceId, setVoiceId] = useState<string>("");
   const [data, setData] = useState<NewSessionData>();
-  const [text, setText] = useState<string>("");
-  const [initialized, setInitialized] = useState(false); // Track initialization
-  const [recording, setRecording] = useState(false); // Track recording state
+  const [initialized, setInitialized] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
   const mediaStream = useRef<HTMLVideoElement>(null);
   const avatar = useRef<StreamingAvatarApi | null>(null);
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const audioChunks = useRef<Blob[]>([]);
 
   const [finalTranscript, setFinalTranscript] = useState<string>("");
-
-  const { handleSubmit } = useChat({
+  const [isProcessing, setIsProcessing] = useState(false);
+  const handleInactivity = useCallback(() => {
+    if (initialized && avatar.current && data?.sessionId) {
+      avatar.current.speak({
+        taskRequest: {
+          text: "I cannot hear you. Could you please speak up or check your microphone?",
+          sessionId: data.sessionId,
+        },
+      });
+    }
+  }, [initialized, avatar, data]);
+  const { messages, append } = useChat({
     onFinish: async (message) => {
       console.log("ChatGPT Response:", message);
 
@@ -57,62 +54,47 @@ export default function  StreamingAvatar() {
         return;
       }
 
-      //send the ChatGPT response to the Streaming Avatar
-      await avatar.current
-        .speak({
+      try {
+        // Send the ChatGPT response to the Streaming Avatar
+        await avatar.current.speak({
           taskRequest: { text: message.content, sessionId: data?.sessionId },
-        })
-        .catch((e) => {
-          console.error(`Error in streamingAvatar - ${e}`);
-          setDebug(e.message);
         });
-      setIsLoadingChat(false);
+      } catch (e) {
+        console.error(`Error in streamingAvatar - ${e}`);
+        setDebug(`Error in streamingAvatar: ${e}`);
+      } finally {
+        setIsProcessing(false);
+      }
     },
     initialMessages: [
       {
         id: "1",
         role: "system",
-        content: "You are a helpful assistant.",
-      },
-      {
-        id: "2",
-        role: "user",
-        content: finalTranscript,
+        content: "You are a helpful assistant engaging in a conversation. Keep your responses concise and natural, as if speaking.",
       },
     ],
   });
 
   useEffect(() => {
-    if (stream) {
-      console.log("Stream is active");
-    } else {
-      console.log("Stream is not active");
+    if (finalTranscript && !isProcessing) {
+      console.log("Processing transcript:", finalTranscript);
+      setIsProcessing(true);
+      processTranscript(finalTranscript);
     }
-  }, [stream]);
+  }, [finalTranscript]);
 
-  // useEffect(() => {
-  //   if (chatRef.current) {
-  //     chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  //   }
-  // }, [input]);
+  const processTranscript = async (transcript: string) => {
+    console.log("Appending user message:", transcript);
+    await append({
+      role: 'user',
+      content: transcript,
+    });
+    setFinalTranscript("");
+  };
 
   const toggleChat = useCallback(() => {
     setIsChatOpen(prevState => !prevState);
   }, []);
-
-  async function fetchAccessToken() {
-    try {
-      const response = await fetch("/api/get-access-token", {
-        method: "POST",
-      });
-      const token = await response.text();
-      console.log("Access Token:", token); // Log the token to verify
-      return token;
-    } catch (error) {
-      console.error("Error fetching access token:", error);
-      return "";
-    }
-  }
 
   async function startSession() {
     setIsLoadingSession(true);
@@ -134,18 +116,40 @@ export default function  StreamingAvatar() {
       );
       setData(res);
       setStream(avatar.current.mediaStream);
+
+      // Speak initial message
+      await avatar.current.speak({
+        taskRequest: {
+          text: "Hello! I'm your AI assistant. I'm here to engage in a conversation with you. I'll keep my responses concise and natural, as if we're speaking in person. How can I help you today?",
+          sessionId: res.sessionId,
+        },
+      });
     } catch (error) {
       console.error("Error starting avatar session:", error);
-      setDebug(
-        `There was an error starting the session. ${voiceId ? "This custom voice ID may not be supported." : ""}`
-      );
+      setDebug("There was an error starting the session.");
+    } finally {
+      setIsLoadingSession(false);
     }
-    setIsLoadingSession(false);
+  }
+
+
+  async function fetchAccessToken() {
+    try {
+      const response = await fetch("/api/get-access-token", {
+        method: "POST",
+      });
+      const token = await response.text();
+      console.log("Access Token:", token);
+      return token;
+    } catch (error) {
+      console.error("Error fetching access token:", error);
+      return "";
+    }
   }
 
   async function updateToken() {
     const newToken = await fetchAccessToken();
-    console.log("Updating Access Token:", newToken); // Log token for debugging
+    console.log("Updating Access Token:", newToken);
     avatar.current = new StreamingAvatarApi(
       new Configuration({ accessToken: newToken })
     );
@@ -165,18 +169,6 @@ export default function  StreamingAvatar() {
     setInitialized(true);
   }
 
-  async function handleInterrupt() {
-    if (!initialized || !avatar.current) {
-      setDebug("Avatar API not initialized");
-      return;
-    }
-    await avatar.current
-      .interrupt({ interruptRequest: { sessionId: data?.sessionId } })
-      .catch((e) => {
-        setDebug(e.message);
-      });
-  }
-
   async function endSession() {
     if (!initialized || !avatar.current) {
       setDebug("Avatar API not initialized");
@@ -189,28 +181,14 @@ export default function  StreamingAvatar() {
     setStream(undefined);
   }
 
-  async function handleSpeak() {
-    setIsLoadingRepeat(true);
-    if (!initialized || !avatar.current) {
-      setDebug("Avatar API not initialized");
-      return;
-    }
-    await avatar.current
-      .speak({ taskRequest: { text: text, sessionId: data?.sessionId } })
-      .catch((e) => {
-        setDebug(e.message);
-      });
-    setIsLoadingRepeat(false);
-  }
-
   useEffect(() => {
     async function init() {
       const newToken = await fetchAccessToken();
-      console.log("Initializing with Access Token:", newToken); // Log token for debugging
+      console.log("Initializing with Access Token:", newToken);
       avatar.current = new StreamingAvatarApi(
         new Configuration({ accessToken: newToken, jitterBuffer: 200 })
       );
-      setInitialized(true); // Set initialized to true
+      setInitialized(true);
     }
     init();
 
@@ -229,60 +207,18 @@ export default function  StreamingAvatar() {
     }
   }, [mediaStream, stream]);
 
-  function startRecording() {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
-        mediaRecorder.current = new MediaRecorder(stream);
-        mediaRecorder.current.ondataavailable = (event) => {
-          audioChunks.current.push(event.data);
-        };
-        mediaRecorder.current.onstop = () => {
-          const audioBlob = new Blob(audioChunks.current, {
-            type: "audio/wav",
-          });
-          audioChunks.current = [];
-          transcribeAudio(audioBlob);
-        };
-        mediaRecorder.current.start();
-        setRecording(true);
-      })
-      .catch((error) => {
-        console.error("Error accessing microphone:", error);
-      });
-  }
-
-  function stopRecording() {
-    if (mediaRecorder.current) {
-      mediaRecorder.current.stop();
-      setRecording(false);
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
-  }
-
-  async function transcribeAudio(audioBlob: Blob) {
-    try {
-      // Convert Blob to File
-      const audioFile = new File([audioBlob], "recording.wav", {
-        type: "audio/wav",
-      });
-      const response = await openai.audio.transcriptions.create({
-        model: "whisper-1",
-        file: audioFile,
-      });
-      const transcription = response.text;
-      console.log("Transcription: ", transcription);
-      setInput(transcription);
-    } catch (error) {
-      console.error("Error transcribing audio:", error);
-    }
-  }
+  }, [messages]);
 
   return (
     <div className="h-screen bg-gray-100 p-10 flex flex-col">
       <div className="flex-1 flex overflow-hidden">
         <div className="bg-white rounded-lg w-full flex flex-col justify-center shadow-lg transition-all duration-300 ease-in-out relative">
           <div
-            className="absolute top-5 right-5 z-10"
+            className="absolute top-5 right-5 z-10 cursor-pointer"
             onClick={toggleChat}
           >
             <FiMoreVertical size={24} />
@@ -314,74 +250,40 @@ export default function  StreamingAvatar() {
               transition={{ duration: 0.3 }}
               className="bg-white rounded-lg shadow-lg ml-4 p-4 flex flex-col overflow-hidden"
             >
-              <h2 className="text-xl font-bold mb-4">Chat</h2>
+              <h2 className="text-xl font-bold mb-4">Conversation</h2>
               <motion.div
                 layoutScroll
                 className="grow rounded-md overflow-y-auto mb-4"
-                style={{ maxHeight: "calc(85vh - 200px)" }}
+                style={{ maxHeight: "85vh" }}
                 ref={chatRef}
               >
                 <motion.div className="max-w-full mx-auto w-full flex flex-col gap-4 pb-4">
                   <AnimatePresence mode="popLayout">
-                    {/* ... (keep the existing chat messages rendering logic) */}
+                    {messages.map((message) => (
+                      <motion.div
+                        key={message.id}
+                        layout
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className={`flex ${
+                          message.role === "user" ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`max-w-md p-4 rounded-lg ${
+                            message.role === "user"
+                              ? "bg-blue-500 text-white"
+                              : "bg-gray-200 text-black"
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                      </motion.div>
+                    ))}
                   </AnimatePresence>
                 </motion.div>
               </motion.div>
-              <StreamingAvatarTextInput
-                label=""
-                placeholder="Repeat"
-                input={text}
-                onSubmit={handleSpeak}
-                setInput={setText}
-                disabled={!stream}
-                loading={isLoadingRepeat}
-              />
-              <div className="h-4"></div>
-              <StreamingAvatarTextInput
-                label=""
-                placeholder="Chat"
-                input={finalTranscript}
-                onSubmit={() => {
-                  setIsLoadingChat(true);
-                  if (!finalTranscript) {
-                    setDebug("Please enter text to send to ChatGPT");
-                    return;
-                  }
-                  handleSubmit();
-                  setFinalTranscript("");
-                }}
-                setInput={setFinalTranscript}
-                loading={isLoadingChat}
-                // endContent={
-                //   <Tooltip
-                //     content={!recording ? "Start recording" : "Stop recording"}
-                //   >
-                //     <Button
-                //       onClick={!recording ? startRecording : stopRecording}
-                //       isDisabled={!stream}
-                //       isIconOnly
-                //       className={clsx(
-                //         "mr-4 text-white",
-                //         !recording
-                //           ? "bg-gradient-to-tr from-indigo-500 to-indigo-300"
-                //           : ""
-                //       )}
-                //       size="sm"
-                //       variant="shadow"
-                //     >
-                //       {!recording ? (
-                //         <Microphone size={20} />
-                //       ) : (
-                //         <>
-                //           <div className="absolute h-full w-full bg-gradient-to-tr from-indigo-500 to-indigo-300 animate-pulse -z-10"></div>
-                //           <MicrophoneStage size={20} />
-                //         </>
-                //       )}
-                //     </Button>
-                //   </Tooltip>
-                // }
-                disabled={!stream}
-              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -389,7 +291,15 @@ export default function  StreamingAvatar() {
       <div className="mt-auto">
         <DeepgramContextProvider>
           <MicrophoneContextProvider>
-            {stream && <Controls finalTranscript={finalTranscript} setFinalTranscript={setFinalTranscript} handleSubmit={handleSubmit} /> }            
+            <Controls 
+              finalTranscript={finalTranscript} 
+              setFinalTranscript={setFinalTranscript} 
+              handleSubmit={() => {
+                console.log("Handle submit called");
+                // This function is empty because the useEffect hook handles the transcript processing
+              }}
+              handleInactivity={handleInactivity}
+            />
           </MicrophoneContextProvider>
         </DeepgramContextProvider>
       </div>
