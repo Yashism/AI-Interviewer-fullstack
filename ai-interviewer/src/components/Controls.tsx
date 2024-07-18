@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { Mic, MicOff, Phone } from "lucide-react";
+import { Mic, MicOff, Phone, Video, VideoOff } from "lucide-react";
 import { Toggle } from "./ui/toggle";
 import { useEffect, useState, useRef } from "react";
 import {
@@ -23,16 +23,24 @@ interface ControlsProps {
   setFinalTranscript: (transcript: string) => void;
   handleSubmit: () => void;
   handleInactivity: () => void;
+  isCameraOn: boolean;
+  toggleCamera: () => void;
 }
 
-export default function Controls({ finalTranscript, setFinalTranscript, handleSubmit, handleInactivity }: ControlsProps) {
+export default function Controls({ 
+  finalTranscript, 
+  setFinalTranscript, 
+  handleSubmit, 
+  handleInactivity,
+  isCameraOn,
+  toggleCamera
+}: ControlsProps) {
   const [caption, setCaption] = useState<string | undefined>("Powered by AI-INTERVIEWER");
   const { connection, connectToDeepgram, disconnectFromDeepgram, connectionState } = useDeepgram();
   const { setupMicrophone, microphone, startMicrophone, stopMicrophone, microphoneState } = useMicrophone();
 
   const [accumulatedTranscript, setAccumulatedTranscript] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [fftData, setFftData] = useState<number[]>([]);
 
@@ -79,8 +87,16 @@ export default function Controls({ finalTranscript, setFinalTranscript, handleSu
 
       if (thisCaption !== "") {
         setCaption(thisCaption);
-        setAccumulatedTranscript(prev => prev + " " + thisCaption);
         setIsSpeaking(true);
+
+        if (is_final) {
+          const newTranscript = accumulatedTranscript + " " + thisCaption;
+          setAccumulatedTranscript("");
+          setFinalTranscript(newTranscript.trim());
+          handleSubmit();
+        } else {
+          setAccumulatedTranscript(prev => prev + " " + thisCaption);
+        }
 
         // Reset inactivity timer
         if (inactivityTimeoutRef.current) {
@@ -89,14 +105,6 @@ export default function Controls({ finalTranscript, setFinalTranscript, handleSu
         inactivityTimeoutRef.current = setTimeout(() => {
           handleInactivity();
         }, 10000);
-
-        // Set silence timer
-        if (silenceTimeoutRef.current) {
-          clearTimeout(silenceTimeoutRef.current);
-        }
-        silenceTimeoutRef.current = setTimeout(() => {
-          submitTranscript();
-        }, 1000);
       }
     };
 
@@ -133,27 +141,20 @@ export default function Controls({ finalTranscript, setFinalTranscript, handleSu
     return () => {
       connection.removeListener(LiveTranscriptionEvents.Transcript, onTranscript);
       microphone.removeEventListener(MicrophoneEvents.DataAvailable, onData);
-      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
       if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
       if (sourceRef.current) sourceRef.current.disconnect();
       if (audioContextRef.current) audioContextRef.current.close();
     };
   }, [connectionState, microphone, connection]);
 
-  const submitTranscript = () => {
-    if (accumulatedTranscript.trim() !== "") {
-      console.log("Submitting transcript:", accumulatedTranscript.trim());
-      setFinalTranscript(accumulatedTranscript.trim());
-      setAccumulatedTranscript("");
-      handleSubmit();
-    }
-    setIsSpeaking(false);
-  };
-
   const toggleMicrophone = () => {
     if (microphoneState === MicrophoneState.Open) {
       stopMicrophone();
-      submitTranscript();
+      if (accumulatedTranscript.trim() !== "") {
+        setFinalTranscript(accumulatedTranscript.trim());
+        setAccumulatedTranscript("");
+        handleSubmit();
+      }
     } else {
       startMicrophone();
     }
@@ -162,20 +163,28 @@ export default function Controls({ finalTranscript, setFinalTranscript, handleSu
   return (
     <div className={cn("fixed bottom-0 left-0 w-full p-4 flex items-center justify-center")}>
       <div className="p-4 bg-card border border-border rounded-lg shadow-sm flex items-center gap-4">
-        <Toggle pressed={microphoneState === MicrophoneState.Open} onPressedChange={toggleMicrophone}>
-          {microphoneState !== MicrophoneState.Open ? (
-            <MicOff className="size-3" />
+        <Toggle pressed={isCameraOn} onPressedChange={toggleCamera}>
+          {isCameraOn ? (
+            <Video className="size-4" />
           ) : (
-            <Mic className="size-3" />
+            <VideoOff className="size-4" />
           )}
         </Toggle>
-  
+        
+        <Toggle pressed={microphoneState === MicrophoneState.Open} onPressedChange={toggleMicrophone}>
+          {microphoneState !== MicrophoneState.Open ? (
+            <MicOff className="size-4" />
+          ) : (
+            <Mic className="size-4" />
+          )}
+        </Toggle>
+
         <div className="relative h-6 w-48 shrink-0">
           {microphoneState === MicrophoneState.Open && (
             <MicFFT fft={fftData} className="text-foreground/50" />
           )}
         </div>
-  
+
         <Button
           className="flex items-center gap-1"
           onClick={() => {

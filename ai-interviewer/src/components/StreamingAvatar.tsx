@@ -32,6 +32,8 @@ export default function StreamingAvatar() {
   const chatRef = useRef<HTMLDivElement>(null);
   const mediaStream = useRef<HTMLVideoElement>(null);
   const avatar = useRef<StreamingAvatarApi | null>(null);
+  const [isCameraOn, setIsCameraOn] = useState(false);
+  const userVideoRef = useRef<HTMLVideoElement>(null);
 
   const [finalTranscript, setFinalTranscript] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -213,6 +215,28 @@ export default function StreamingAvatar() {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (isCameraOn) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          if (userVideoRef.current) {
+            userVideoRef.current.srcObject = stream;
+          }
+        })
+        .catch((err) => console.error("Error accessing camera:", err));
+    } else {
+      const stream = userVideoRef.current?.srcObject as MediaStream;
+      stream?.getTracks().forEach(track => track.stop());
+      if (userVideoRef.current) {
+        userVideoRef.current.srcObject = null;
+      }
+    }
+  }, [isCameraOn]);
+
+  const toggleCamera = () => {
+    setIsCameraOn(!isCameraOn);
+  };
+
   return (
     <div className="h-screen bg-gray-100 p-10 flex flex-col">
       <div className="flex-1 flex overflow-hidden">
@@ -240,6 +264,20 @@ export default function StreamingAvatar() {
               <Spinner size="lg" color="default" />
             )}
           </div>
+          <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isCameraOn ? 1 : 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute top-10 right-16 w-72 h-48 bg-black rounded-lg overflow-hidden"
+        >
+          <video
+            ref={userVideoRef}
+            autoPlay
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
         </div>
         <AnimatePresence>
           {isChatOpen && (
@@ -296,9 +334,10 @@ export default function StreamingAvatar() {
               setFinalTranscript={setFinalTranscript} 
               handleSubmit={() => {
                 console.log("Handle submit called");
-                // This function is empty because the useEffect hook handles the transcript processing
               }}
               handleInactivity={handleInactivity}
+              isCameraOn={isCameraOn}
+              toggleCamera={toggleCamera}
             />
           </MicrophoneContextProvider>
         </DeepgramContextProvider>
