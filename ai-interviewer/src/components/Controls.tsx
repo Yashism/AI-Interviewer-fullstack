@@ -169,13 +169,13 @@ export default function Controls({ finalTranscript, setFinalTranscript, handleSu
             <Mic className="size-3" />
           )}
         </Toggle>
-
-        <div className="relative grid h-8 w-48 shrink grow-0">
+  
+        <div className="relative h-6 w-48 shrink-0">
           {microphoneState === MicrophoneState.Open && (
-            <MicFFT fft={fftData} />
+            <MicFFT fft={fftData} className="text-foreground/50" />
           )}
         </div>
-
+  
         <Button
           className="flex items-center gap-1"
           onClick={() => {
