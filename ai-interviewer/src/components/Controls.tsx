@@ -200,7 +200,6 @@ export default function Controls({
         </Button>
       </div>
       <div className="absolute top-[-30px] left-0 w-full text-center">
-        <p className="text-sm text-gray-500">{caption}</p>
       </div>
     </div>
   );

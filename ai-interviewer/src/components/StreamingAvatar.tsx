@@ -16,6 +16,8 @@ import RemoveGreenBackground from './RemoveGreenBackground';
 import Controls from "./Controls";
 import { MicrophoneContextProvider } from "../context/MicrophoneContextProvider";
 import { DeepgramContextProvider } from "../context/DeepgramContextProvider";
+import { FaceWidgets } from "./FaceWidgets";
+import { TopEmotions } from "./TopEmotions";
 
 const openai = new OpenAI({
   apiKey: "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",
@@ -34,7 +36,7 @@ export default function StreamingAvatar() {
   const avatar = useRef<StreamingAvatarApi | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const userVideoRef = useRef<HTMLVideoElement>(null);
-
+  const HUME_API_KEY = "5clXGcclSBXfhERWNWBYx9GOgnPvzAruKJ3F5q6zJUbEui4j";
   const [finalTranscript, setFinalTranscript] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const handleInactivity = useCallback(() => {
@@ -265,19 +267,19 @@ export default function StreamingAvatar() {
             )}
           </div>
           <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isCameraOn ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
-          className="absolute top-10 right-16 w-72 h-48 bg-black rounded-lg overflow-hidden"
-        >
-          <video
-            ref={userVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isCameraOn ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute top-10 right-16 w-72 h-48 bg-black rounded-lg overflow-hidden"
+          >
+            <video
+              ref={userVideoRef}
+              autoPlay
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
         </div>
         <AnimatePresence>
           {isChatOpen && (
@@ -289,6 +291,11 @@ export default function StreamingAvatar() {
               className="bg-white rounded-lg shadow-lg ml-4 p-4 flex flex-col overflow-hidden"
             >
               <h2 className="text-xl font-bold mb-4">Conversation</h2>
+              <FaceWidgets 
+                userVideoRef={userVideoRef}
+                isCameraOn={isCameraOn}
+                apiKey={HUME_API_KEY}
+              />
               <motion.div
                 layoutScroll
                 className="grow rounded-md overflow-y-auto mb-4"
