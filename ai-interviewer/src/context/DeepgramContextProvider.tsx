@@ -72,7 +72,9 @@ const DeepgramContextProvider: FunctionComponent<DeepgramContextProviderProps> =
 
   const disconnectFromDeepgram = async () => {
     if (connection) {
+      console.log("disconnect From Deepgram")
       connection.finish();
+      setConnectionState(CONNECTION_STATE.Closed)
       setConnection(null);
     }
   };
