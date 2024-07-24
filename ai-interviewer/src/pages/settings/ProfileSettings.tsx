@@ -39,10 +39,10 @@ export function ProfileSettings() {
       <CardContent>
         <form className="flex flex-col gap-4">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-24 w-24">
+            {/* <Avatar className="h-24 w-24">
               <AvatarImage src={previewUrl || undefined} />
               <AvatarFallback>DP</AvatarFallback>
-            </Avatar>
+            </Avatar> */}
             <div className="flex flex-col gap-4">
               <Input 
                 type="file" 
