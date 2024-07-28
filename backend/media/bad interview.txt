@@ -1,0 +1,20 @@
+00:00:01 - Interviewer: Hello! How are you doing today?
+00:00:05 - User: I'm doing good. How about you? (Polite, Neutral, Reserved)
+00:00:10 - Interviewer: Let's start the interview. Can you please introduce yourself?
+00:00:15 - User: I'm Samarth Jagtap. I study Computer Engineering. (Brief, Lacks Detail, Disengaged)
+00:00:30 - Interviewer: Can you tell me about your experience as a Website Developer at Beejzap LLC.?
+00:00:35 - User: I made websites and did some database stuff. (Vague, Unenthusiastic, Lacks Detail)
+00:00:50 - Interviewer: What kind of projects did you work on at the UTA Rover Club?
+00:00:55 - User: We worked on a rover arm. I used Arduino. (Brief, Lacks Detail, Disengaged)
+00:01:10 - Interviewer: What would you say is your biggest strength?
+00:01:15 - User: I'm good at solving problems. (Brief, Lacks Detail, Unenthusiastic)
+00:01:30 - Interviewer: What about your biggest weakness?
+00:01:35 - User: I overthink sometimes. (Brief, Lacks Insight, Disengaged)
+00:01:45 - Interviewer: How do you handle tight deadlines and pressure?
+00:01:50 - User: I just try to do my work. (Brief, Lacks Detail, Disengaged)
+00:02:05 - Interviewer: Can you describe a challenging situation you faced and how you handled it?
+00:02:10 - User: Our system crashed once. We fixed it. (Brief, Lacks Detail, Disengaged)
+00:02:25 - Interviewer: Do you have any questions for me?
+00:02:30 - User: No, not really. (Disengaged, Uninterested, Brief)
+00:02:45 - Interviewer: Thank you for your time, Samarth.
+00:02:50 - User: Thank you. (Polite, Neutral, Reserved)
