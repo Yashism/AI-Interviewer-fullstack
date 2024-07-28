@@ -1,4 +1,6 @@
 import Navbar from "@/components/navigation/Navbar";
+import { useTheme } from "next-themes";
+import "../styles/globals.css"
 import {
   Card,
   CardContent,
@@ -11,8 +13,12 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { FaqElement } from "@/components/F&q";
+import { ModeToggle } from "@/app/_components/toggle";
 
-const help = () => (
+ export const help = () =>  { 
+  const { theme } = useTheme();
+  return  (
   <div className="flex flex-col gap-10">
     <Navbar />
     <div></div>
@@ -46,15 +52,18 @@ const help = () => (
             >
               Message
             </label>
-            <Input placeholder="Your Message" />
+            <textarea placeholder="Your Message" className="resize-y p-2 border rounded-md h-32 focus:border-black dark:focus:border-black dark" />
           </form>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
-          <Button>Send</Button>
+          <Button className="w-32">Send</Button>
         </CardFooter>
       </Card>
+      <div className="mt-8 mb-5 shadow-lg">
+       <FaqElement/>
+      </div>
     </div>
   </div>
 );
-
+}
 export default help;

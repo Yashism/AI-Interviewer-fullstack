@@ -3,10 +3,9 @@ import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import upload from "../../public/upload.svg";
-import { useVoice } from "@humeai/voice-react";
 import { Button } from "./ui/button";
 import { Phone } from "lucide-react";
-import CallScreen from "./CallScreen";
+import StreamingAvatar from "./StreamingAvatar";
 
 interface UploadedFile {
   name: string;
@@ -56,7 +55,6 @@ export default function ResumeUploader() {
   };
   
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-  const { status, connect } = useVoice();
 
   const generateQuestions = async () => {
     if (!uploadedFile || !resumeText) {
@@ -92,29 +90,20 @@ export default function ResumeUploader() {
     //   alert('Please upload a resume and generate questions first.');
     //   return;
     // }
-
-    connect()
-      .then(() => {
-        console.log('Call connected');
-        setIsCallConnected(true);
-        setShowCallScreen(true);
-      })
-      .catch((error) => {
-        console.error('Error connecting call:', error);
-      });
+    setShowCallScreen(true);
   };
 
   if (showCallScreen) {
-    return <CallScreen questions={questions} isCallConnected={isCallConnected} />;
+    return <StreamingAvatar />;
   }
 
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-3xl rounded-lg bg-white p-6 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-white bg-dot-pattern">
+      <div className="w-full max-w-3xl rounded-lg bg-white p-6 shadow-xl border border-gray-300">
         <div className="flex justify-between">
           <div className="w-1/2 pr-4 flex flex-col">
-            <h2 className="mb-4 text-xl grow-0 font-bold text-center">Add your resume below</h2>
+            <h2 className="mb-4 text-xl grow-0 font-bold text-center text-black">Add your resume below</h2>
             <div
               {...getRootProps()}
               className={`rounded-lg grow border-2 border-dashed items-center content-center text-center ${
@@ -154,7 +143,7 @@ export default function ResumeUploader() {
             <span className="text-gray-600">Or</span>
           </div>
           <div className="w-1/2 pl-4">
-            <h2 className="mb-4 text-xl font-bold">Describe the Position</h2>
+            <h2 className="mb-4 text-xl font-bold text-center text-black">Describe the Position</h2>
             <div className="space-y-4">
               <div>
                 <label
@@ -168,7 +157,7 @@ export default function ResumeUploader() {
                   id="job-title"
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
-                  className="mt-1 p-1 block w-full rounded-md border text-md font-medium border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 p-1 block w-full rounded-md border text-md text-black font-medium border-gray-300 shadow-sm focus:border-gray-300 focus:ring-0 bg-white"
                 />
               </div>
               <div>
@@ -183,7 +172,7 @@ export default function ResumeUploader() {
                   id="company-name"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  className="mt-1 p-1 block w-full rounded-md border text-md font-medium border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 p-1 block w-full rounded-md border text-md text-black font-medium border-gray-300 shadow-sm focus:border-gray-300 focus:ring-0 bg-white"
                 />
               </div>
               <div>
@@ -197,33 +186,33 @@ export default function ResumeUploader() {
                   id="job-description"
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  className="mt-1 block p-1 w-full rounded-md border text-md font-medium border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block p-1 w-full rounded-md border text-md text-black font-medium border-gray-300 shadow-sm focus:border-gray-300 bg-white"
                 />
               </div>
             </div>
           </div>
         </div>
         <div className="flex items-center justify-center p-6 space-x-4">
-          <Button
-            className={"z-50 flex items-center gap-1.5"}
-            onClick={generateQuestions}
-          >
-            Generate Questions
-          </Button>
-          <Button
-            className={"z-50 flex items-center gap-1.5"}
-            onClick={startCall}
-          >
-            <span>
-              <Phone
-                className={"size-4 opacity-50"}
-                strokeWidth={2}
-                stroke={"currentColor"}
-              />
-            </span>
-            <span>Start Call</span>
-          </Button>
-        </div>
+        <Button
+          className="z-50 flex items-center bg-black text-white border border-transparent hover:bg-black hover:text-white hover:border-black transition-all duration-300 transform active:scale-95 active:shadow-inner"
+          onClick={generateQuestions}
+        >
+          Generate Questions
+        </Button>
+        <Button
+          className="z-50 flex items-center gap-1.5 bg-black text-white border border-transparent hover:bg-black hover:text-white hover:border-black transition-all duration-300 transform active:scale-95 active:shadow-inner"
+          onClick={startCall}
+        >
+          <span>
+            <Phone
+              className={"size-4 opacity-50"}
+              strokeWidth={2}
+              stroke={"currentColor"}
+            />
+          </span>
+          <span>Start Call</span>
+        </Button>
+      </div>
       </div>
     </div>
   );

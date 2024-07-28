@@ -23,18 +23,21 @@ export default function MicFFT({
             className={cn("absolute !inset-0 !size-full", className)}
           >
             {Array.from({ length: 24 }).map((_, index) => {
-              const value = (fft[index] ?? 0) / 4;
-              const h = Math.min(Math.max(height * value, 2), height);
-              const yOffset = height * 0.5 - h * 0.5;
-
+              const value = (fft[index] ?? 0) / 255; // Normalize value between 0 and 1
+              const maxHeight = height * 0.8; // Maximum height of 80% of container
+              const minHeight = height * 0.1; // Minimum height of 10% of container
+              const h = Math.max(minHeight, Math.min(maxHeight * value, maxHeight));
+              const yOffset = (height - h) / 2; // Center the bar vertically
               return (
                 <motion.rect
                   key={`mic-fft-${index}`}
                   height={h}
                   width={2}
-                  x={2 + (index * width - 4) / 24}
+                  x={index * (width / 24)}
                   y={yOffset}
-                  rx={4}
+                  rx={1} // Rounded corners
+                  ry={1} // Rounded corners
+                  fill="black"
                 />
               );
             })}
