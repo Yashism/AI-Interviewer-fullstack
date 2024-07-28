@@ -12,12 +12,15 @@ import { useChat } from "ai/react";
 import OpenAI from "openai";
 import { FiMoreVertical } from 'react-icons/fi';
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useRouter } from 'next/router';
 import RemoveGreenBackground from './RemoveGreenBackground';
 import Controls from "./Controls";
 import { MicrophoneContextProvider } from "../context/MicrophoneContextProvider";
 import { DeepgramContextProvider } from "../context/DeepgramContextProvider";
 import { FaceWidgets } from "./FaceWidgets";
 import { TopEmotions } from "./TopEmotions";
+import { Descriptor } from "./Descriptor";
+import { Emotion } from "../lib/data/emotion";
 
 const openai = new OpenAI({
   apiKey: "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",
@@ -25,6 +28,7 @@ const openai = new OpenAI({
 });
 
 export default function StreamingAvatar() {
+  const router = useRouter();
   const [isLoadingSession, setIsLoadingSession] = useState(false);
   const [stream, setStream] = useState<MediaStream>();
   const [debug, setDebug] = useState<string>();
@@ -39,6 +43,12 @@ export default function StreamingAvatar() {
   const HUME_API_KEY = "5clXGcclSBXfhERWNWBYx9GOgnPvzAruKJ3F5q6zJUbEui4j";
   const [finalTranscript, setFinalTranscript] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportGenerated, setReportGenerated] = useState(false);
+  const [currentEmotions, setCurrentEmotions] = useState<Emotion[]>([]);
+  const [emotionLog, setEmotionLog] = useState<Array<{ timestamp: number; emotion: string }>>([]);
+  const [userMessages, setUserMessages] = useState<Array<{ content: string; timestamp: number }>>([]);
+  const [reportFileName, setReportFileName] = useState<string | null>(null);
   const handleInactivity = useCallback(() => {
     if (initialized && avatar.current && data?.sessionId) {
       avatar.current.speak({
@@ -86,15 +96,6 @@ export default function StreamingAvatar() {
       processTranscript(finalTranscript);
     }
   }, [finalTranscript]);
-
-  const processTranscript = async (transcript: string) => {
-    console.log("Appending user message:", transcript);
-    await append({
-      role: 'user',
-      content: transcript,
-    });
-    setFinalTranscript("");
-  };
 
   const toggleChat = useCallback(() => {
     setIsChatOpen(prevState => !prevState);
@@ -239,6 +240,107 @@ export default function StreamingAvatar() {
     setIsCameraOn(!isCameraOn);
   };
 
+  const handleSpeechEnd = (transcript: string) => {
+    const overallEmotion = createDescription(currentEmotions);
+    setEmotionLog(prevLog => [...prevLog, { transcript, emotion: overallEmotion }]);
+  };
+
+  const createDescription = (emotions: Emotion[]): string => {
+    // This function should be the same as in your Descriptor component
+    // You may want to extract it to a utility file to avoid duplication
+    emotions.sort((a, b) => (a.score < b.score ? 1 : -1));
+    if (emotions.length < 2) return "";
+
+    const primaryEmotion = emotions[0];
+    let secondaryEmotion = emotions[1];
+    let secondaryDescriptor = "";
+    for (let i = 1; i < emotions.length; i++) {
+      const emotion = emotions[i];
+      const descriptor = getEmotionDescriptor(emotion.name);
+      if (descriptor !== None) {
+        secondaryDescriptor = descriptor;
+        secondaryEmotion = emotion;
+        break;
+      }
+    }
+    if (Math.abs(primaryEmotion.score - secondaryEmotion.score) > 0.1) {
+      return primaryEmotion.name;
+    }
+    return `${secondaryDescriptor} ${primaryEmotion.name}`;
+  };
+
+  const handleEmotionUpdate = (emotions: Emotion[]) => {
+    const overallEmotion = createDescription(emotions);
+    setEmotionLog(prevLog => [...prevLog, { timestamp: Date.now(), emotion: overallEmotion }]);
+  };
+
+  const processTranscript = async (transcript: string) => {
+    console.log("Processing transcript:", transcript);
+    setUserMessages(prevMessages => [...prevMessages, { content: transcript, timestamp: Date.now() }]);
+    await append({
+      role: 'user',
+      content: transcript,
+    });
+    setFinalTranscript("");
+  };
+
+  const handleEndInterview = async () => {
+    setIsGeneratingReport(true);
+    try {
+      const response = await fetch('/api/generate-transcript', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages, emotionLog, userMessages }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate transcript');
+      }
+      
+      const data = await response.json();
+      setReportFileName(data.fileName);
+      setReportGenerated(true);
+    } catch (error) {
+      console.error('Error generating transcript:', error);
+      setDebug('Error generating transcript. Please try again.');
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
+
+  const navigateToReports = () => {
+    if (reportFileName) {
+      router.push(`/reports?file=${reportFileName}`);
+    } else {
+      console.error('Report file name is not available');
+      setDebug('Error: Report file name is not available');
+    }
+  };
+
+  if (isGeneratingReport) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+        <p className="ml-4">Generating Interview Report...</p>
+      </div>
+    );
+  }
+
+  if (reportGenerated) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold">Interview Report Generated</h1>
+        <p className="mt-4">Your interview report has been generated successfully.</p>
+        <Button onClick={navigateToReports} className="mt-4">
+          View Report
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-gray-100 p-10 flex flex-col">
       <div className="flex-1 flex overflow-hidden">
@@ -333,6 +435,13 @@ export default function StreamingAvatar() {
           )}
         </AnimatePresence>
       </div>
+      <FaceWidgets 
+        userVideoRef={userVideoRef}
+        isCameraOn={isCameraOn}
+        apiKey={HUME_API_KEY}
+        onEmotionUpdate={handleEmotionUpdate}
+      />
+      <Descriptor emotions={currentEmotions} />
       <div className="mt-auto">
         <DeepgramContextProvider>
           <MicrophoneContextProvider>
@@ -341,10 +450,12 @@ export default function StreamingAvatar() {
               setFinalTranscript={setFinalTranscript} 
               handleSubmit={() => {
                 console.log("Handle submit called");
+                handleSpeechEnd(finalTranscript);
               }}
               handleInactivity={handleInactivity}
               isCameraOn={isCameraOn}
               toggleCamera={toggleCamera}
+              onEndInterview={handleEndInterview}
             />
           </MicrophoneContextProvider>
         </DeepgramContextProvider>

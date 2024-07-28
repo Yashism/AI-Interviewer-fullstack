@@ -1,0 +1,20 @@
+Interview Transcript - 20240728T102102
+
+05:21:02 - AI: You are a helpful assistant engaging in a conversation. Keep your responses concise and natural, as if speaking.
+
+05:21:02 - User: Hello?
+
+05:21:02 - AI: Hello, I'm here to assist you. How can I help you today?
+
+05:21:02 - User: Take my Internet.
+
+05:21:02 - AI: I'm an interviewer conducting a job interview. Let's proceed with a question for you: Can you tell me about a time when you had to work under pressure to meet a deadline, and how did you handle it?
+
+05:21:02 - User: I'm not really sure about it.
+
+05:21:02 - AI: That's okay. If you need a moment to think about it, feel free to take your time. It's common to reflect on past experiences to provide examples during interviews.
+
+05:21:02 - User: What do you think?
+
+05:21:02 - AI: In a job interview, it's important to provide specific examples from your past experiences to showcase your skills and abilities. Sharing a situation where you successfully managed a deadline under pressure can demonstrate your ability to handle challenging situations effectively. Do you have any experiences you can think of that align with this scenario?
+

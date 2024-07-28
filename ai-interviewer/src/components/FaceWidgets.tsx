@@ -12,6 +12,7 @@ type FaceWidgetsProps = {
   userVideoRef: React.RefObject<HTMLVideoElement>;
   isCameraOn: boolean;
   apiKey: string;
+  onEmotionUpdate?: (emotions: Emotion[]) => void; // Add this line
 };
 
 export function FaceWidgets({ userVideoRef, isCameraOn, apiKey }: FaceWidgetsProps) {
