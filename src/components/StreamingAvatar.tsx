@@ -20,7 +20,7 @@ import { FaceWidgets } from "./FaceWidgets";
 import { TopEmotions } from "./TopEmotions";
 
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: process.env.OPENAI_APIKEY,
   dangerouslyAllowBrowser: true,
 });
 

@@ -49,10 +49,10 @@ export default async function Home() {
         <div className="flex flex-row items-center justify-between gap-5">
           <ModeToggle />
           <Link
-            href={session ? "/api/auth/signout" : "/api/auth/signin"}
+           href="Auth/SignUpPage"
             className="inline-flex h-9 items-center justify-center rounded-md bg-muted px-4 py-1.5 text-lg font-semibold  dark:from-white dark:to-slate-900/10 transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           >
-            {session ? "Sign out" : "Sign in"}
+            SignUp
           </Link>
         </div>
       </header>
