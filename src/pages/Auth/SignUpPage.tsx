@@ -151,7 +151,7 @@ const AuthPage = () => {
         </div>
         
         <div className="mt-4 space-y-3">
-          <button className="w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition duration-300">
+          <button  onClick={() => signIn('google')} className="w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition duration-300">
             <img src="/Google.png" alt="Google logo" className="w-5 h-5 mr-2" />
             <span className="font-medium">{isSignUp?"Sign up with Google":" Sign in with Google"}</span>
           </button>

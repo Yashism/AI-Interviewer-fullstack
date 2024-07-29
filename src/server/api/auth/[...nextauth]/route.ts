@@ -8,8 +8,8 @@ import { type Adapter } from "next-auth/adapters";
 import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { env } from "@/env";
-import { db } from "@/server/db";
+import { env } from "../../../../env"
+import { db } from "../../../db";
 import bcrypt from "bcrypt";
 
 declare module "next-auth" {

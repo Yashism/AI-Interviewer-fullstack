@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ModeToggle } from "@/app/_components/toggle";
-import { getServerAuthSession } from "@/server/auth";
+import { getServerAuthSession } from "../server/api/auth/[...nextauth]/route";
 import { api } from "@/trpc/server";
 import {BentoDemo} from "@/components/magicui/Bentogrid"; // Import the correct component
 

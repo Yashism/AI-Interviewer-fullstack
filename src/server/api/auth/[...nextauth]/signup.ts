@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { db } from "../../../server/db";
+import { db } from "../../../db";
 import bcrypt from 'bcrypt'
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
@@ -32,4 +32,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(500).json({ message: 'An error occurred during sign up' });
     }
   }
+  
   
