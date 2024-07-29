@@ -10,11 +10,19 @@ const AuthPage = () => {
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const submitButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleSubmit = (e:any) => {
+  const handleSubmit = (e:React.FormEvent) => {
     e.preventDefault();
+    const email = emailRef.current?.value;
+    const password = passwordRef.current?.value;
     if (isSignUp) {
       console.log('Signing up...');
-      // Implement sign-up logic here
+      const name = nameRef.current?.value;
+      const confirmPassword= confirmPasswordRef.current?.value;
+      if(password != confirmPassword){
+        alert("Password doesn't match");
+        return;
+      }
+      const response = 
     } else {  
       console.log('Signing in...');
       // Implement sign-in logic here
@@ -146,3 +154,4 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+
