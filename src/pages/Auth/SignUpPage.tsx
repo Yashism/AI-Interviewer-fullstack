@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Eye } from 'lucide-react';
 import "../../styles/globals.css"
 import { useReducedMotion } from 'framer-motion';
+import { signIn, useSession } from 'next-auth/react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -9,8 +12,14 @@ const AuthPage = () => {
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const submitButtonRef = useRef<HTMLButtonElement>(null);
-
-  const handleSubmit = (e:React.FormEvent) => {
+  const { data: session } = useSession();
+  const router = useRouter()
+  useEffect(() => {
+    if (session) {
+      router.push('/dashboard');
+    }
+  }, [session, router]);
+  const handleSubmit =  async (e:React.FormEvent) => {
     e.preventDefault();
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
@@ -22,10 +31,25 @@ const AuthPage = () => {
         alert("Password doesn't match");
         return;
       }
-      const response = 
+      const response =  await axios.post('/api/auth/signup',{name,email,password});
+      if (response.status === 201) {
+        signIn('credentials', { email, password, callbackUrl: '/dashboard' });
+      } else {
+        alert(response.data.error);
+      }
     } else {  
       console.log('Signing in...');
-      // Implement sign-in logic here
+      const result = await  signIn('credentials',{
+        redirect:false,
+        email,
+        password,
+      });
+      if (result?.error) {
+        alert(result.error);
+      } else {
+        router.push('/dashboard');
+      }
+
     }
   };
   // Set initial focus when component mounts
@@ -154,4 +178,5 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+
 
