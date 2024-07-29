@@ -55,7 +55,7 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String    @id @default(uuid())
     name          String?
     email         String?   @unique
     emailVerified DateTime?
@@ -63,6 +63,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    password      String?
 }
 
 model VerificationToken {
