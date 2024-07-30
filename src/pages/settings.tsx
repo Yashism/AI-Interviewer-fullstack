@@ -3,23 +3,36 @@ import "../styles/globals.css";
 import { useRouter } from 'next/router';
 import Navbar from "@/components/navigation/Navbar";
 import ProfileSettings from "@/pages/settings/ProfileSettings";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ApiSettings from "./settings/Apisettings";
 import InterviewSettings from "./settings/InterviewSettings";
+import { useAuth } from "@clerk/nextjs";
 
 export function Settings() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState(router.query.tab || 'profile');
+  const { isLoaded, userId } = useAuth();
+
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, userId, router]);
+
+  if (!isLoaded || !userId) {
+    return <div>Loading...</div>;
+  }
+
   const renderContent = () => {
     switch(activeTab) {
-      case "profile" :
-      return <ProfileSettings/>
+      case "profile":
+        return <ProfileSettings/>
       case 'api':
         return <ApiSettings/>;
-        case 'interview':
+      case 'interview':
         return <InterviewSettings/>;
-        default:
-          return <ProfileSettings />;
+      default:
+        return <ProfileSettings />;
     }
   }
 
@@ -31,8 +44,8 @@ export function Settings() {
           <h1 className="text-3xl font-semibold">Settings</h1>
         </div>
         <div className="mx-auto grid w-full max-w-6xl items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]">
-        <nav className="grid gap-4 text-sm text-muted-foreground">
-        <Link href="/settings?tab=profile" onClick={() => setActiveTab('profile')} className={activeTab === 'profile' ? "font-semibold text-primary" : ""}>
+          <nav className="grid gap-4 text-sm text-muted-foreground">
+            <Link href="/settings?tab=profile" onClick={() => setActiveTab('profile')} className={activeTab === 'profile' ? "font-semibold text-primary" : ""}>
               Profile
             </Link>
             <Link href="/settings?tab=interview" onClick={() => setActiveTab('interview')} className={activeTab === 'interview' ? "font-semibold text-primary" : ""}>
@@ -42,13 +55,14 @@ export function Settings() {
               Api-Integrations
             </Link>
             <Link href="/help">Support</Link>
-        </nav>
+          </nav>
           <div className="grid gap-6">
-          {renderContent()}
+            {renderContent()}
           </div>
         </div>
       </main>
     </div>
   );
 }
+
 export default Settings;

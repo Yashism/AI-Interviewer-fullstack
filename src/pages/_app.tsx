@@ -1,18 +1,13 @@
-import type { AppProps } from "next/app";
-import { SessionProvider } from "next-auth/react"
-import type { Session } from "next-auth";
-// Extend AppProps to include the session prop
-type AppPropsWithSession = AppProps & {
-  session: Session | null;
-};
-function MyApp({ Component, pageProps, session }: AppPropsWithSession) {
+
+import { ClerkProvider } from '@clerk/nextjs'
+import type { AppProps } from 'next/app'
+
+function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <SessionProvider session={session}>
+    <ClerkProvider {...pageProps}>
       <Component {...pageProps} />
-    </SessionProvider>
-  );
+    </ClerkProvider>
+  )
 }
 
-
-export default MyApp;
-
+export default MyApp
