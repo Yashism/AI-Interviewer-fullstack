@@ -18,7 +18,7 @@
     "@ai-sdk/openai": "^0.0.36",
     "@auth/prisma-adapter": "^1.6.0",
     "@clerk/nextjs": "^5.2.8",
-    "@deepgram/sdk": "github:deepgram/deepgram-node-sdk",
+    "@deepgram/sdk": "^3.5.0",
     "@heygen/streaming-avatar": "^1.0.14",
     "@humeai/voice-react": "^0.1.8",
     "@motionone/utils": "^10.18.0",
