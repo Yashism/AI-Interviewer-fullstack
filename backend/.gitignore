@@ -1,0 +1,6 @@
+/env
+/requirements.txt
+.env
+db.sqlite3
+/static
+__pycache__/
