@@ -1,7 +1,8 @@
-import { CircleUser, Menu, Package2, Search } from "lucide-react";
+import { Menu, Package2 } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { SignInButton, SignOutButton, UserButton, useUser } from "@clerk/nextjs";
 
 import {
   DropdownMenu,
@@ -12,13 +13,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/Dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Navbar = () => {
   const { theme } = useTheme();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const { isLoaded, isSignedIn, user } = useUser();
 
   useEffect(() => {
     const controlNavbar = () => {
@@ -39,6 +40,7 @@ const Navbar = () => {
       };
     }
   }, [lastScrollY]);
+
   return (
     <header className={`flex flex-row justify-between items-center w-full text-xl p-12 font-semibold transition-all duration-300 ${
       isVisible ? 'translate-y-0' : '-translate-y-full'
@@ -48,7 +50,6 @@ const Navbar = () => {
         className="flex items-center gap-2"
         prefetch={false}
       >
-        {/* hsl(240 10% 3.9%) */}
         <div className="">AI Interviewer</div>
       </Link>
       <nav className="flex items-center gap-4 space-x-4">
@@ -67,7 +68,7 @@ const Navbar = () => {
           Interview
         </Link>
         <Link
-          href="/settings" // Update the link to point to the correct path
+          href="/settings"
           className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold  transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
           prefetch={false}
         >
@@ -99,52 +100,62 @@ const Navbar = () => {
               <span className="sr-only">Acme Inc</span>
             </Link>
             <Link
-              href="#"
+              href="/"
               className="text-muted-foreground hover:text-foreground"
             >
               Dashboard
             </Link>
             <Link
-              href="#"
+              href="/interview"
               className="text-muted-foreground hover:text-foreground"
             >
-              Orders
+              Interview
             </Link>
             <Link
-              href="#"
+              href="/settings"
               className="text-muted-foreground hover:text-foreground"
             >
-              Products
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Customers
-            </Link>
-            <Link href="#" className="hover:text-foreground">
               Settings
+            </Link>
+            <Link
+              href="/help"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Help
             </Link>
           </nav>
         </SheetContent>
       </Sheet>
       <div className="flex items-center gap-4 lg:gap-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="icon" className="rounded-full">
-              <CircleUser className="h-5 w-5" />
-              <span className="sr-only">Toggle user menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {isLoaded && (
+          isSignedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <UserButton afterSignOutUrl="/" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{user?.fullName}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Link href="/settings">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/help">Support</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <SignOutButton>Logout</SignOutButton>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <SignInButton mode="modal">
+              <Button variant="secondary" size="icon" className="rounded-full">
+                Sign In
+              </Button>
+            </SignInButton>
+          )
+        )}
       </div>
     </header>
   );

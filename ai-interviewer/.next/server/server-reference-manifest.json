@@ -1,0 +1,14 @@
+{
+  "node": {
+    "1177a4006031e19ae16ea98106956105c8b1b456": {
+      "workers": {
+        "app/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fworkspaces%2FAI-Interviewer-fullstack%2Fai-interviewer%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%22invalidateCacheAction%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/page": "action-browser"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "fjTn/+kGi2334SNOMT1jVmLl+U/gxYBu0bsYmjjFoc8="
+}
