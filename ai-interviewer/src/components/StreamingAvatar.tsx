@@ -18,14 +18,9 @@ import Controls from "./Controls";
 import { MicrophoneContextProvider } from "../context/MicrophoneContextProvider";
 import { DeepgramContextProvider } from "../context/DeepgramContextProvider";
 import { FaceWidgets } from "./FaceWidgets";
-import { TopEmotions } from "./TopEmotions";
 import { Descriptor } from "./Descriptor";
 import { Emotion } from "../lib/data/emotion";
-
-const openai = new OpenAI({
-  apiKey: "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",
-  dangerouslyAllowBrowser: true,
-});
+import FeedbackReport from './FeedbackReport';
 
 export default function StreamingAvatar() {
   const router = useRouter();
@@ -46,8 +41,11 @@ export default function StreamingAvatar() {
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
   const [currentEmotions, setCurrentEmotions] = useState<Emotion[]>([]);
+  const [transcriptWithEmotions, setTranscriptWithEmotions] = useState<string[]>([]);
+  const [currentEmotion, setCurrentEmotion] = useState<string>("");
+  const [reportData, setReportData] = useState(null);
   const [emotionLog, setEmotionLog] = useState<Array<{ timestamp: number; emotion: string }>>([]);
-  const [userMessages, setUserMessages] = useState<Array<{ content: string; timestamp: number }>>([]);
+  const [userMessages, setUserMessages] = useState<Array<{ content: string; timestamp: number; emotion?: string }>>([]);
   const [reportFileName, setReportFileName] = useState<string | null>(null);
   const handleInactivity = useCallback(() => {
     if (initialized && avatar.current && data?.sessionId) {
@@ -246,8 +244,6 @@ export default function StreamingAvatar() {
   };
 
   const createDescription = (emotions: Emotion[]): string => {
-    // This function should be the same as in your Descriptor component
-    // You may want to extract it to a utility file to avoid duplication
     emotions.sort((a, b) => (a.score < b.score ? 1 : -1));
     if (emotions.length < 2) return "";
 
@@ -270,13 +266,18 @@ export default function StreamingAvatar() {
   };
 
   const handleEmotionUpdate = (emotions: Emotion[]) => {
-    const overallEmotion = createDescription(emotions);
-    setEmotionLog(prevLog => [...prevLog, { timestamp: Date.now(), emotion: overallEmotion }]);
+    const currentEmotion = createDescription(emotions);
+    setEmotionLog(prevLog => [...prevLog, { timestamp: Date.now(), emotion: currentEmotion }]);
   };
 
   const processTranscript = async (transcript: string) => {
     console.log("Processing transcript:", transcript);
-    setUserMessages(prevMessages => [...prevMessages, { content: transcript, timestamp: Date.now() }]);
+    const currentEmotion = createDescription(currentEmotions);
+    setUserMessages(prevMessages => [...prevMessages, { 
+      content: transcript, 
+      timestamp: Date.now(),
+      emotion: currentEmotion
+    }]);
     await append({
       role: 'user',
       content: transcript,
@@ -287,24 +288,46 @@ export default function StreamingAvatar() {
   const handleEndInterview = async () => {
     setIsGeneratingReport(true);
     try {
-      const response = await fetch('/api/generate-transcript', {
+      // First, generate the transcript
+      const transcriptResponse = await fetch('/api/generate-transcript', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ messages, emotionLog, userMessages }),
+        body: JSON.stringify({ 
+          messages, 
+          emotionLog, 
+          userMessages 
+        }),
       });
       
-      if (!response.ok) {
+      if (!transcriptResponse.ok) {
         throw new Error('Failed to generate transcript');
       }
       
-      const data = await response.json();
-      setReportFileName(data.fileName);
+      const transcriptData = await transcriptResponse.json();
+      setReportFileName(transcriptData.fileName);
+
+      // Now, send the transcript and emotion data to Django backend
+      const formData = new FormData();
+      formData.append('transcript', new Blob([transcriptData.content], { type: 'text/plain' }), 'transcript.txt');
+      formData.append('emotion_data', new Blob([JSON.stringify(emotionLog)], { type: 'application/json' }), 'emotion_data.txt');
+
+      const analysisResponse = await fetch('http://localhost:3000/analyze-interview/', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!analysisResponse.ok) {
+        throw new Error('Failed to analyze interview');
+      }
+
+      const analysisData = await analysisResponse.json();
+      setReportData(analysisData);
       setReportGenerated(true);
     } catch (error) {
-      console.error('Error generating transcript:', error);
-      setDebug('Error generating transcript. Please try again.');
+      console.error('Error generating report:', error);
+      setDebug('Error generating report. Please try again.');
     } finally {
       setIsGeneratingReport(false);
     }
@@ -332,10 +355,14 @@ export default function StreamingAvatar() {
   if (reportGenerated) {
     return (
       <div className="h-screen flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold">Interview Report Generated</h1>
-        <p className="mt-4">Your interview report has been generated successfully.</p>
-        <Button onClick={navigateToReports} className="mt-4">
-          View Report
+        <h1 className="text-2xl font-bold mb-4">Interview Report Generated</h1>
+        {reportData ? (
+          <FeedbackReport reportData={reportData} />
+        ) : (
+          <p>Loading report data...</p>
+        )}
+        <Button onClick={() => setReportGenerated(false)} className="mt-4">
+          Back to Interview
         </Button>
       </div>
     );

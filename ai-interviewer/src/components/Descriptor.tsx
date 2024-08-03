@@ -2,6 +2,7 @@ import { Emotion } from "../lib/data/emotion";
 import { None } from "../lib/utilities/typeUtilities";
 import { getEmotionDescriptor } from "../lib/utilities/emotionUtilities";
 import { useStableEmotions } from "../lib/hooks/stability";
+import { useEffect } from "react";
 
 type DescriptorProps = {
   className?: string;
@@ -35,6 +36,27 @@ export function Descriptor({ className, emotions }: DescriptorProps) {
       return primaryEmotion.name;
     }
     return `${secondaryDescriptor} ${primaryEmotion.name}`;
+  }
+
+  useEffect(() => {
+    if (stableEmotions.length > 0) {
+      const overallEmotion = createDescription(stableEmotions);
+      logEmotion(overallEmotion);
+    }
+  }, [stableEmotions]);
+
+  async function logEmotion(emotion: string) {
+    try {
+      await fetch('/api/log-emotion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emotion }),
+      });
+    } catch (error) {
+      console.error('Error logging emotion:', error);
+    }
   }
 
   return (
