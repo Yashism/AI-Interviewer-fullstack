@@ -288,41 +288,35 @@ export default function StreamingAvatar() {
   const handleEndInterview = async () => {
     setIsGeneratingReport(true);
     try {
-      // First, generate the transcript
-      const transcriptResponse = await fetch('/api/generate-transcript', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          messages, 
-          emotionLog, 
-          userMessages 
-        }),
-      });
-      
-      if (!transcriptResponse.ok) {
-        throw new Error('Failed to generate transcript');
-      }
-      
-      const transcriptData = await transcriptResponse.json();
-      setReportFileName(transcriptData.fileName);
-
+      // Prepare transcript
+      const transcriptContent = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+  
+      // Prepare emotion data
+      const emotionData = emotionLog.map(entry => ({
+        timestamp: entry.timestamp,
+        emotion: entry.emotion
+      }));
+  
       // Now, send the transcript and emotion data to Django backend
       const formData = new FormData();
-      formData.append('transcript', new Blob([transcriptData.content], { type: 'text/plain' }), 'transcript.txt');
-      formData.append('emotion_data', new Blob([JSON.stringify(emotionLog)], { type: 'application/json' }), 'emotion_data.txt');
-
-      const analysisResponse = await fetch('http://localhost:3000/analyze-interview/', {
+      formData.append('transcript', new Blob([transcriptContent], { type: 'text/plain' }), 'transcript.txt');
+      formData.append('emotion_data', new Blob([JSON.stringify(emotionData)], { type: 'application/json' }), 'emotion_data.txt');
+  
+      console.log('Transcript content:', transcriptContent);
+      console.log('Emotion data:', JSON.stringify(emotionData));
+  
+      const analysisResponse = await fetch('http://localhost:8000/api/analyze-interview/', {
         method: 'POST',
         body: formData,
       });
-
+  
       if (!analysisResponse.ok) {
-        throw new Error('Failed to analyze interview');
+        const errorText = await analysisResponse.text();
+        throw new Error(`Failed to analyze interview: ${errorText}`);
       }
-
+  
       const analysisData = await analysisResponse.json();
+      console.log('Analysis data:', analysisData);
       setReportData(analysisData);
       setReportGenerated(true);
     } catch (error) {

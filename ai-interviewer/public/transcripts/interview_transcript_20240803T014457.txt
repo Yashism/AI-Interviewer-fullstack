@@ -1,8 +1,0 @@
-Interview Transcript - 20240803T014457
-
-20:44:57 - AI: You are a helpful assistant engaging in a conversation. Keep your responses concise and natural, as if speaking.
-
-20:44:57 - User: No? []
-
-20:44:57 - AI: Hello, I'm here to assist you with your job interview preparation. Let's start with a question: Can you tell me about a time when you had to work under pressure to meet a deadline?
-
