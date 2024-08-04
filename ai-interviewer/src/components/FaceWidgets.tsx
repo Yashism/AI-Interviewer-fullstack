@@ -218,8 +218,8 @@ export function FaceWidgets({ userVideoRef, isCameraOn, apiKey }: FaceWidgetsPro
     <div>
       <div className="pt-6">{status}</div>
       <canvas className="hidden" ref={photoRef}></canvas>
-      {/* <TopEmotions emotions={emotions} numEmotions={3} />
-      <Descriptor className="mt-8" emotions={emotions} /> */}
+      <TopEmotions emotions={emotions} numEmotions={3} />
+      <Descriptor className="mt-8" emotions={emotions} />
     </div>
   );
 }

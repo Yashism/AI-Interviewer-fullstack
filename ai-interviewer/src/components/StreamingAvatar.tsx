@@ -9,7 +9,6 @@ import {
 } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChat } from "ai/react";
-import OpenAI from "openai";
 import { FiMoreVertical } from 'react-icons/fi';
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from 'next/router';
@@ -267,7 +266,30 @@ export default function StreamingAvatar() {
 
   const handleEmotionUpdate = (emotions: Emotion[]) => {
     const currentEmotion = createDescription(emotions);
-    setEmotionLog(prevLog => [...prevLog, { timestamp: Date.now(), emotion: currentEmotion }]);
+    setEmotionLog(prevLog => [...prevLog, { 
+      timestamp: Date.now(), // This ensures a valid timestamp
+      emotion: currentEmotion 
+    }]);const handleEmotionUpdate = async (emotions: Emotion[]) => {
+      const currentEmotion = createDescription(emotions);
+      
+      // Log emotion to both state and file
+      setEmotionLog(prevLog => [...prevLog, { 
+        timestamp: Date.now(),
+        emotion: currentEmotion 
+      }]);
+    
+      try {
+        await fetch('/api/log-emotion', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ emotion: currentEmotion }),
+        });
+      } catch (error) {
+        console.error('Error logging emotion:', error);
+      }
+    };
   };
 
   const processTranscript = async (transcript: string) => {
@@ -284,49 +306,85 @@ export default function StreamingAvatar() {
     });
     setFinalTranscript("");
   };
-
+  
   const handleEndInterview = async () => {
     setIsGeneratingReport(true);
     try {
-      // Prepare transcript
-      const transcriptContent = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-  
-      // Prepare emotion data
-      const emotionData = emotionLog.map(entry => ({
-        timestamp: entry.timestamp,
-        emotion: entry.emotion
-      }));
-  
-      // Now, send the transcript and emotion data to Django backend
-      const formData = new FormData();
-      formData.append('transcript', new Blob([transcriptContent], { type: 'text/plain' }), 'transcript.txt');
-      formData.append('emotion_data', new Blob([JSON.stringify(emotionData)], { type: 'application/json' }), 'emotion_data.txt');
-  
-      console.log('Transcript content:', transcriptContent);
-      console.log('Emotion data:', JSON.stringify(emotionData));
-  
-      const analysisResponse = await fetch('http://localhost:8000/api/analyze-interview/', {
+      // Generate transcript file
+      const generateTranscriptResponse = await fetch('/api/generate-transcript', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          emotionLog,
+          userMessages,
+        }),
       });
-  
+
+      if (!generateTranscriptResponse.ok) {
+        throw new Error('Failed to generate transcript');
+      }
+
+      const { fileName } = await generateTranscriptResponse.json();
+
+      // Now call the analyze-interview API with the generated file name
+      const analysisResponse = await fetch('/api/analyze-interview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName,
+        }),
+      });
+
       if (!analysisResponse.ok) {
         const errorText = await analysisResponse.text();
         throw new Error(`Failed to analyze interview: ${errorText}`);
       }
-  
+
       const analysisData = await analysisResponse.json();
       console.log('Analysis data:', analysisData);
-      setReportData(analysisData);
-      setReportGenerated(true);
+      
+      const { interviewId } = analysisData;
+
+      // Navigate to the feedback page
+      await router.push(`/${interviewId}/feedback`);
     } catch (error) {
       console.error('Error generating report:', error);
-      setDebug('Error generating report. Please try again.');
-    } finally {
-      setIsGeneratingReport(false);
+      setIsGeneratingReport(false); // Reset loading state on error
+      alert('Error generating report. Please try again.');
     }
+    // Note: We don't set isGeneratingReport to false here, as we want to keep the loading state until navigation
   };
+  
 
+  if (isGeneratingReport) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+        <p className="ml-4">Generating Interview Report...</p>
+      </div>
+    );
+  }
+
+  if (reportGenerated) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold mb-4">Interview Report Generated</h1>
+        {reportData ? (
+          <FeedbackReport reportData={reportData} />
+        ) : (
+          <p>Loading report data...</p>
+        )}
+        <Button onClick={() => setReportGenerated(false)} className="mt-4">
+          Back to Interview
+        </Button>
+      </div>
+    );
+  }
 
   const navigateToReports = () => {
     if (reportFileName) {
@@ -464,7 +522,7 @@ export default function StreamingAvatar() {
       />
       <Descriptor emotions={currentEmotions} />
       <div className="mt-auto">
-        <DeepgramContextProvider>
+       <DeepgramContextProvider>
           <MicrophoneContextProvider>
             <Controls 
               finalTranscript={finalTranscript} 

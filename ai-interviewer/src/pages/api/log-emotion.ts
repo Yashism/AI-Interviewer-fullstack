@@ -1,4 +1,3 @@
-// pages/api/log-emotion.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
@@ -10,10 +9,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const timestamp = new Date().toISOString();
       const logEntry = `${timestamp}: ${emotion}\n`;
       
-      const filePath = path.join(process.cwd(), 'emotion_log.txt');
+      const publicPath = path.join(process.cwd(), 'public', 'emotion_data.txt');
       
-      // Append to the file
-      fs.appendFileSync(filePath, logEntry);
+      // Append to both files
+      fs.appendFileSync(publicPath, logEntry);
       
       res.status(200).json({ message: 'Emotion logged successfully' });
     } catch (error) {
