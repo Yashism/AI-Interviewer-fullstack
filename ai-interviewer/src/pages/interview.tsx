@@ -3,8 +3,22 @@ import React, { useState, useEffect } from 'react';
 // import { VoiceProvider } from '@humeai/voice-react';
 // import "../styles/globals.css"
 import ResumeUploader from "@/components/ResumeUploader";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/router";
 
 const Interview = () => {
+  const { isLoaded, userId } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, userId, router]);
+
+  if (!isLoaded || !userId) {
+    return <div>Loading...</div>;
+  }
   // const [accessToken, setAccessToken] = useState('');
 
   // useEffect(() => {

@@ -1,14 +1,9 @@
 import Link from "next/link";
 import { ModeToggle } from "@/app/_components/toggle";
-import { getServerAuthSession } from "@/server/auth";
-import { api } from "@/trpc/server";
 import {BentoDemo} from "@/components/magicui/Bentogrid"; // Import the correct component
-
 import "../styles/globals.css";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await getServerAuthSession();
 
   return (
     <div className="flex flex-col items-center justify-between min-h-screen px-4 py-9">
@@ -48,12 +43,6 @@ export default async function Home() {
         </nav>
         <div className="flex flex-row items-center justify-between gap-5">
           <ModeToggle />
-          <Link
-            href={session ? "/api/auth/signout" : "/api/auth/signin"}
-            className="inline-flex h-9 items-center justify-center rounded-md bg-muted px-4 py-1.5 text-lg font-semibold  dark:from-white dark:to-slate-900/10 transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-          >
-            {session ? "Sign out" : "Sign in"}
-          </Link>
         </div>
       </header>
       <BentoDemo />
