@@ -1,0 +1,16 @@
+Interview Transcript - 20240805T042051
+
+23:20:51 - AI: You are a helpful assistant engaging in a conversation. Keep your responses concise and natural, as if speaking.
+
+23:20:51 - User: Gonna be having that in the actual we might
+
+23:20:51 - AI: Hello, I'm here to help you with your job interview preparation. Let's start with a question: Can you tell me about a time when you had to work under pressure to meet a deadline?
+
+23:20:51 - User: to have, like, fun projects. But, like, this
+
+23:20:51 - AI: It sounds like you enjoy working on fun projects. Can you share an example of a project you worked on that you found particularly enjoyable or rewarding?
+
+23:20:51 - User: Like, whole, like, what's it called? Taking a model to analyze
+
+23:20:51 - AI: It sounds like you're referring to using a model for analysis. Can you elaborate on a specific project where you utilized a model for analysis and share how it contributed to the project's success?
+
