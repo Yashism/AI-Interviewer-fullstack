@@ -26,8 +26,10 @@ const RemoveGreenBackground: React.FC<RemoveGreenBackgroundProps> = ({ stream })
     };
     imageRef.current.onerror = (event) => {
       console.error('Failed to load image.', event);
-      const target = event.target as HTMLImageElement;
-      console.error(`Failed to load image from URL: ${target.src}`);
+      if (event instanceof Event) {
+        const target = event.target as HTMLImageElement;
+        console.error(`Failed to load image from URL: ${target.src}`);
+      }
     };
   }, []);
   
