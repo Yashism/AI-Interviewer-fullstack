@@ -19,6 +19,10 @@ import MicFFT from "./MicFFT";
 
 import "../styles/globals.css";
 
+interface Window {
+  webkitAudioContext: typeof AudioContext
+}
+
 interface ControlsProps {
   finalTranscript: string;
   setFinalTranscript: (transcript: string) => void;
@@ -118,7 +122,7 @@ export default function Controls({
       startMicrophone();
 
       // Set up audio context and analyser for MicFFT
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       analyserRef.current = audioContextRef.current.createAnalyser();
       analyserRef.current.fftSize = 256;
       sourceRef.current = audioContextRef.current.createMediaStreamSource(microphone.stream);
