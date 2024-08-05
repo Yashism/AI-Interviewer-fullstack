@@ -4,7 +4,7 @@ import { FacePrediction } from "../lib/data/facePrediction";
 import { TrackedFace } from "../lib/data/trackedFace";
 import { VideoRecorder } from "../lib/media/videoRecorder";
 import { blobToBase64 } from "../lib/utilities/blobUtilities";
-import { getApiUrlWs } from "../lib/utilities/environmentUtilities";
+import { getApiUrlWs, Environment } from "../lib/utilities/environmentUtilities";
 import { TopEmotions } from "./TopEmotions";
 import { Descriptor } from "./Descriptor";
 
@@ -50,8 +50,9 @@ export function FaceWidgets({ userVideoRef, isCameraOn, apiKey, onEmotionUpdate 
     if (socket && socket.readyState === WebSocket.OPEN) {
       console.log("Socket already exists, will not create");
     } else {
-      // Remove the "production" argument and call getApiUrlWs without arguments
-      const baseUrl = getApiUrlWs();
+      // Use the correct Environment type
+      const environment: Environment = 'production' as Environment; // or the correct value for your environment
+      const baseUrl = getApiUrlWs(environment);
       const endpointUrl = `${baseUrl}/v0/stream/models`;
       const socketUrl = `${endpointUrl}?apikey=${apiKey}`;
       console.log(`Connecting to websocket... (using ${endpointUrl})`);
