@@ -1,12 +1,18 @@
 /** @type {import("next").NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  typescript: {
-    ignoreBuildErrors: true,
+const config = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:5000/api/:path*',
+      },
+    ];
   },
-  eslint: {
-    ignoreDuringBuilds: true,
+  // Add this to enable App Router
+  experimental: {
+    // @ts-ignore
+    appDir: true,
   },
-}
+};
 
-module.exports = nextConfig
+export default config;
