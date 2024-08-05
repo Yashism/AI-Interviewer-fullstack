@@ -17,31 +17,43 @@ export function Descriptor({ className, emotions }: DescriptorProps) {
   className = className || "";
 
   function createDescription(emotions: Emotion[]): string {
+    if (emotions.length === 0) return "";
+    
     emotions.sort((a, b) => (a.score < b.score ? 1 : -1));
-    if (emotions.length < 2) return "";
-
+    
     const primaryEmotion = emotions[0];
-    let secondaryEmotion = emotions[1];
+    let secondaryEmotion: Emotion | undefined = emotions[1];
     let secondaryDescriptor = "";
+  
     for (let i = 1; i < emotions.length; i++) {
       const emotion = emotions[i];
-      const descriptor = getEmotionDescriptor(emotion.name);
-      if (descriptor !== None) {
-        secondaryDescriptor = descriptor;
-        secondaryEmotion = emotion;
-        break;
+      if (emotion && emotion.name) {
+        const descriptor = getEmotionDescriptor(emotion.name);
+        if (descriptor !== None) {
+          secondaryDescriptor = descriptor;
+          secondaryEmotion = emotion;
+          break;
+        }
       }
     }
+  
+    if (!secondaryEmotion) {
+      return primaryEmotion.name;
+    }
+  
     if (Math.abs(primaryEmotion.score - secondaryEmotion.score) > emotionDistThreshold) {
       return primaryEmotion.name;
     }
+  
     return `${secondaryDescriptor} ${primaryEmotion.name}`;
   }
 
   useEffect(() => {
     if (stableEmotions.length > 0) {
       const overallEmotion = createDescription(stableEmotions);
-      logEmotion(overallEmotion);
+      if (overallEmotion) {
+        logEmotion(overallEmotion);
+      }
     }
   }, [stableEmotions]);
 
