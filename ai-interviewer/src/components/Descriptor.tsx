@@ -17,11 +17,13 @@ export function Descriptor({ className, emotions }: DescriptorProps) {
   className = className || "";
 
   function createDescription(emotions: Emotion[]): string {
-    if (emotions.length === 0) return "";
+    if (emotions.length === 0) return "No emotion detected";
     
     emotions.sort((a, b) => (a.score < b.score ? 1 : -1));
     
     const primaryEmotion = emotions[0];
+    if (!primaryEmotion) return "No emotion detected";
+  
     let secondaryEmotion: Emotion | undefined = emotions[1];
     let secondaryDescriptor = "";
   
