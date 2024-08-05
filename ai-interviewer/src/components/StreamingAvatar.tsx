@@ -34,14 +34,11 @@ export default function StreamingAvatar() {
   const avatar = useRef<StreamingAvatarApi | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const userVideoRef = useRef<HTMLVideoElement>(null);
-  const HUME_API_KEY = "5clXGcclSBXfhERWNWBYx9GOgnPvzAruKJ3F5q6zJUbEui4j";
   const [finalTranscript, setFinalTranscript] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
   const [currentEmotions, setCurrentEmotions] = useState<Emotion[]>([]);
-  const [transcriptWithEmotions, setTranscriptWithEmotions] = useState<string[]>([]);
-  const [currentEmotion, setCurrentEmotion] = useState<string>("");
   const [reportData, setReportData] = useState(null);
   const [emotionLog, setEmotionLog] = useState<Array<{ timestamp: number; emotion: string }>>([]);
   const [userMessages, setUserMessages] = useState<Array<{ content: string; timestamp: number; emotion?: string }>>([]);
@@ -475,7 +472,7 @@ export default function StreamingAvatar() {
               <FaceWidgets 
                 userVideoRef={userVideoRef}
                 isCameraOn={isCameraOn}
-                apiKey={HUME_API_KEY}
+                apiKey={process.env.HUME_API_KEY  || ''}
               />
               <motion.div
                 layoutScroll
@@ -517,7 +514,7 @@ export default function StreamingAvatar() {
       <FaceWidgets 
         userVideoRef={userVideoRef}
         isCameraOn={isCameraOn}
-        apiKey={HUME_API_KEY}
+        apiKey={process.env.HUME_API_KEY  || ''}
         onEmotionUpdate={handleEmotionUpdate}
       />
       <Descriptor emotions={currentEmotions} />
