@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Mic, MicOff, Phone, Video, VideoOff } from "lucide-react";
 import { Toggle } from "./ui/toggle";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { useEffect, useState, useRef } from "react";
 import {
   CONNECTION_STATE,
@@ -25,6 +26,7 @@ interface ControlsProps {
   handleInactivity: () => void;
   isCameraOn: boolean;
   toggleCamera: () => void;
+  onEndInterview: () => void;
 }
 
 export default function Controls({ 
@@ -33,11 +35,13 @@ export default function Controls({
   handleSubmit, 
   handleInactivity,
   isCameraOn,
-  toggleCamera
+  toggleCamera,
+  onEndInterview
 }: ControlsProps) {
   const [caption, setCaption] = useState<string | undefined>("Powered by AI-INTERVIEWER");
   const { connection, connectToDeepgram, disconnectFromDeepgram, connectionState } = useDeepgram();
   const { setupMicrophone, microphone, startMicrophone, stopMicrophone, microphoneState } = useMicrophone();
+  const [isEndCallDialogOpen, setIsEndCallDialogOpen] = useState(false);
 
   const [accumulatedTranscript, setAccumulatedTranscript] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -160,7 +164,19 @@ export default function Controls({
     }
   };
 
+  const handleEndCall = () => {
+    setIsEndCallDialogOpen(true);
+  };
+
+  const handleConfirmEndCall = () => {
+    connection?.finish();
+    disconnectFromDeepgram();
+    onEndInterview();
+    setIsEndCallDialogOpen(false);
+  };
+
   return (
+    <>
     <div className={cn("fixed bottom-0 left-0 w-full p-4 flex items-center justify-center")}>
       <div className="p-4 bg-card border border-border rounded-lg shadow-sm flex items-center gap-4">
         <Toggle pressed={isCameraOn} onPressedChange={toggleCamera}>
@@ -190,6 +206,7 @@ export default function Controls({
           onClick={() => {
             connection?.finish();
             disconnectFromDeepgram();
+            handleEndCall();
           }}
           variant="destructive"
         >
@@ -202,5 +219,22 @@ export default function Controls({
       <div className="absolute top-[-30px] left-0 w-full text-center">
       </div>
     </div>
+    <Dialog open={isEndCallDialogOpen} onOpenChange={setIsEndCallDialogOpen}>
+    <DialogContent>
+      <DialogTitle>End Interview</DialogTitle>
+      <DialogDescription>
+        Are you sure you want to end the interview? This will generate the interview report.
+      </DialogDescription>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => setIsEndCallDialogOpen(false)}>
+          No, continue
+        </Button>
+        <Button variant="default" onClick={handleConfirmEndCall}>
+          Yes, end interview
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+</>
   );
 }

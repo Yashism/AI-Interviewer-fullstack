@@ -61,7 +61,7 @@ const Navbar = () => {
           Dashboard
         </Link>
         <Link
-          href="/interview"
+          href="/past-interviews"
           className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold  transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 dark:from-white dark:to-slate-900/10"
           prefetch={false}
         >

@@ -20,7 +20,7 @@ export default async function Home() {
             Dashboard
           </Link>
           <Link
-            href="/interview"
+            href="/past-interviews" // Update the link to point to the correct path
             className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-lg font-semibold  dark:from-white dark:to-slate-900/10 transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             prefetch={false}
           >

@@ -9,22 +9,20 @@ import {
 } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChat } from "ai/react";
-import OpenAI from "openai";
 import { FiMoreVertical } from 'react-icons/fi';
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useRouter } from 'next/router';
 import RemoveGreenBackground from './RemoveGreenBackground';
 import Controls from "./Controls";
 import { MicrophoneContextProvider } from "../context/MicrophoneContextProvider";
 import { DeepgramContextProvider } from "../context/DeepgramContextProvider";
 import { FaceWidgets } from "./FaceWidgets";
-import { TopEmotions } from "./TopEmotions";
-
-const openai = new OpenAI({
-  apiKey: "sk-proj-wy1Ew0lbAwyZ5lLZwslRT3BlbkFJ21ZajS4D6LqBJsz8A41G",
-  dangerouslyAllowBrowser: true,
-});
+import { Descriptor } from "./Descriptor";
+import { Emotion } from "../lib/data/emotion";
+import FeedbackReport from './FeedbackReport';
 
 export default function StreamingAvatar() {
+  const router = useRouter();
   const [isLoadingSession, setIsLoadingSession] = useState(false);
   const [stream, setStream] = useState<MediaStream>();
   const [debug, setDebug] = useState<string>();
@@ -36,9 +34,15 @@ export default function StreamingAvatar() {
   const avatar = useRef<StreamingAvatarApi | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const userVideoRef = useRef<HTMLVideoElement>(null);
-  const HUME_API_KEY = "5clXGcclSBXfhERWNWBYx9GOgnPvzAruKJ3F5q6zJUbEui4j";
   const [finalTranscript, setFinalTranscript] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportGenerated, setReportGenerated] = useState(false);
+  const [currentEmotions, setCurrentEmotions] = useState<Emotion[]>([]);
+  const [reportData, setReportData] = useState(null);
+  const [emotionLog, setEmotionLog] = useState<Array<{ timestamp: number; emotion: string }>>([]);
+  const [userMessages, setUserMessages] = useState<Array<{ content: string; timestamp: number; emotion?: string }>>([]);
+  const [reportFileName, setReportFileName] = useState<string | null>(null);
   const handleInactivity = useCallback(() => {
     if (initialized && avatar.current && data?.sessionId) {
       avatar.current.speak({
@@ -86,15 +90,6 @@ export default function StreamingAvatar() {
       processTranscript(finalTranscript);
     }
   }, [finalTranscript]);
-
-  const processTranscript = async (transcript: string) => {
-    console.log("Appending user message:", transcript);
-    await append({
-      role: 'user',
-      content: transcript,
-    });
-    setFinalTranscript("");
-  };
 
   const toggleChat = useCallback(() => {
     setIsChatOpen(prevState => !prevState);
@@ -239,6 +234,189 @@ export default function StreamingAvatar() {
     setIsCameraOn(!isCameraOn);
   };
 
+  const handleSpeechEnd = (transcript: string) => {
+    const overallEmotion = createDescription(currentEmotions);
+    setEmotionLog(prevLog => [...prevLog, { transcript, emotion: overallEmotion }]);
+  };
+
+  const createDescription = (emotions: Emotion[]): string => {
+    emotions.sort((a, b) => (a.score < b.score ? 1 : -1));
+    if (emotions.length < 2) return "";
+
+    const primaryEmotion = emotions[0];
+    let secondaryEmotion = emotions[1];
+    let secondaryDescriptor = "";
+    for (let i = 1; i < emotions.length; i++) {
+      const emotion = emotions[i];
+      const descriptor = getEmotionDescriptor(emotion.name);
+      if (descriptor !== None) {
+        secondaryDescriptor = descriptor;
+        secondaryEmotion = emotion;
+        break;
+      }
+    }
+    if (Math.abs(primaryEmotion.score - secondaryEmotion.score) > 0.1) {
+      return primaryEmotion.name;
+    }
+    return `${secondaryDescriptor} ${primaryEmotion.name}`;
+  };
+
+  const handleEmotionUpdate = (emotions: Emotion[]) => {
+    const currentEmotion = createDescription(emotions);
+    setEmotionLog(prevLog => [...prevLog, { 
+      timestamp: Date.now(), // This ensures a valid timestamp
+      emotion: currentEmotion 
+    }]);const handleEmotionUpdate = async (emotions: Emotion[]) => {
+      const currentEmotion = createDescription(emotions);
+      
+      // Log emotion to both state and file
+      setEmotionLog(prevLog => [...prevLog, { 
+        timestamp: Date.now(),
+        emotion: currentEmotion 
+      }]);
+    
+      try {
+        await fetch('/api/log-emotion', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ emotion: currentEmotion }),
+        });
+      } catch (error) {
+        console.error('Error logging emotion:', error);
+      }
+    };
+  };
+
+  const processTranscript = async (transcript: string) => {
+    console.log("Processing transcript:", transcript);
+    const currentEmotion = createDescription(currentEmotions);
+    setUserMessages(prevMessages => [...prevMessages, { 
+      content: transcript, 
+      timestamp: Date.now(),
+      emotion: currentEmotion
+    }]);
+    await append({
+      role: 'user',
+      content: transcript,
+    });
+    setFinalTranscript("");
+  };
+  
+  const handleEndInterview = async () => {
+    setIsGeneratingReport(true);
+    try {
+      // Generate transcript file
+      const generateTranscriptResponse = await fetch('/api/generate-transcript', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          emotionLog,
+          userMessages,
+        }),
+      });
+
+      if (!generateTranscriptResponse.ok) {
+        throw new Error('Failed to generate transcript');
+      }
+
+      const { fileName } = await generateTranscriptResponse.json();
+
+      // Now call the analyze-interview API with the generated file name
+      const analysisResponse = await fetch('/api/analyze-interview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName,
+        }),
+      });
+
+      if (!analysisResponse.ok) {
+        const errorText = await analysisResponse.text();
+        throw new Error(`Failed to analyze interview: ${errorText}`);
+      }
+
+      const analysisData = await analysisResponse.json();
+      console.log('Analysis data:', analysisData);
+      
+      const { interviewId } = analysisData;
+
+      // Navigate to the feedback page
+      await router.push(`/${interviewId}/feedback`);
+    } catch (error) {
+      console.error('Error generating report:', error);
+      setIsGeneratingReport(false); // Reset loading state on error
+      alert('Error generating report. Please try again.');
+    }
+    // Note: We don't set isGeneratingReport to false here, as we want to keep the loading state until navigation
+  };
+  
+
+  if (isGeneratingReport) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+        <p className="ml-4">Generating Interview Report...</p>
+      </div>
+    );
+  }
+
+  if (reportGenerated) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold mb-4">Interview Report Generated</h1>
+        {reportData ? (
+          <FeedbackReport reportData={reportData} />
+        ) : (
+          <p>Loading report data...</p>
+        )}
+        <Button onClick={() => setReportGenerated(false)} className="mt-4">
+          Back to Interview
+        </Button>
+      </div>
+    );
+  }
+
+  const navigateToReports = () => {
+    if (reportFileName) {
+      router.push(`/reports?file=${reportFileName}`);
+    } else {
+      console.error('Report file name is not available');
+      setDebug('Error: Report file name is not available');
+    }
+  };
+
+  if (isGeneratingReport) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+        <p className="ml-4">Generating Interview Report...</p>
+      </div>
+    );
+  }
+
+  if (reportGenerated) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold mb-4">Interview Report Generated</h1>
+        {reportData ? (
+          <FeedbackReport reportData={reportData} />
+        ) : (
+          <p>Loading report data...</p>
+        )}
+        <Button onClick={() => setReportGenerated(false)} className="mt-4">
+          Back to Interview
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-gray-100 p-10 flex flex-col">
       <div className="flex-1 flex overflow-hidden">
@@ -294,7 +472,7 @@ export default function StreamingAvatar() {
               <FaceWidgets 
                 userVideoRef={userVideoRef}
                 isCameraOn={isCameraOn}
-                apiKey={HUME_API_KEY}
+                apiKey={process.env.HUME_API_KEY  || ''}
               />
               <motion.div
                 layoutScroll
@@ -333,18 +511,27 @@ export default function StreamingAvatar() {
           )}
         </AnimatePresence>
       </div>
+      <FaceWidgets 
+        userVideoRef={userVideoRef}
+        isCameraOn={isCameraOn}
+        apiKey={process.env.HUME_API_KEY  || ''}
+        onEmotionUpdate={handleEmotionUpdate}
+      />
+      <Descriptor emotions={currentEmotions} />
       <div className="mt-auto">
-        <DeepgramContextProvider>
+       <DeepgramContextProvider>
           <MicrophoneContextProvider>
             <Controls 
               finalTranscript={finalTranscript} 
               setFinalTranscript={setFinalTranscript} 
               handleSubmit={() => {
                 console.log("Handle submit called");
+                handleSpeechEnd(finalTranscript);
               }}
               handleInactivity={handleInactivity}
               isCameraOn={isCameraOn}
               toggleCamera={toggleCamera}
+              onEndInterview={handleEndInterview}
             />
           </MicrophoneContextProvider>
         </DeepgramContextProvider>
