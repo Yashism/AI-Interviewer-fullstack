@@ -1,0 +1,44 @@
+{
+  "overall_score": 60,
+  "confidence_score": 55,
+  "strengths": ["Persistence", "Calm demeanor", "Ability to express personal connections"],
+  "weaknesses": ["Lack of focus", "Inability to provide concise responses", "Possible lack of experience"],
+  "questions": [
+    {
+      "question_asked": "Hello, I'm here to assist you. How can I help you today?",
+      "user_response": "Hello?",
+      "ideal_answer": "Hello, I need assistance with...",
+      "emotions_displayed": ["Concentration"]
+    },
+    {
+      "question_asked": "I'm here to help. What specific items are you looking to restock?",
+      "user_response": "We need to make it full of stock.",
+      "ideal_answer": "We are looking to restock on...",
+      "emotions_displayed": ["Sad Boredom", "Bored Concentration"]
+    },
+    {
+      "question_asked": "Great! Could you provide me with a list of the items you need to restock, along with any specific quantities or preferences?",
+      "user_response": "Yeah. And as always,",
+      "ideal_answer": "Yes, we would like to restock on X quantity of Y product.",
+      "emotions_displayed": ["Calmness", "Interested Calmness"]
+    },
+    {
+      "question_asked": "Of course, let's focus on the interview. Could you please share a bit about your experience in the grocery industry and how it relates to the position you are applying for?",
+      "user_response": "Grocery. I'm here to do interview, not",
+      "ideal_answer": "Yes, I have extensive experience in the grocery industry. Specifically, I have worked in...",
+      "emotions_displayed": ["Doubtful Confusion", "Calm Boredom"]
+    },
+    {
+      "question_asked": "That's great to hear. Could you please elaborate on your experience in the grocery industry and how it has prepared you for this role?",
+      "user_response": "Yes. I've been",
+      "ideal_answer": "I have been working in the grocery industry for X years. During this time, I have...",
+      "emotions_displayed": ["Interested Concentration", "Sad Boredom"]
+    },
+    {
+      "question_asked": "It sounds like you have a personal connection to the grocery industry through your mom. How has her experience influenced your interest in this field and your decision to pursue a job in this industry?",
+      "user_response": "My mom used to to to be cross this door.",
+      "ideal_answer": "My mom's experience in the grocery industry has greatly influenced my career path. She taught me...",
+      "emotions_displayed": ["Concentration", "Calm Confusion"]
+    }
+  ]
+}

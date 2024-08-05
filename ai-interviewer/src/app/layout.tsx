@@ -2,8 +2,8 @@ import "@/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "@/components/theme-provider";
-import { TRPCReactProvider } from "@/trpc/react";
 import { DM_Sans } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs'
 
 const dm_sans = DM_Sans({
   subsets: ['latin'],
@@ -24,6 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
+      <ClerkProvider>
       <body className={dm_sans.variable}>
         <ThemeProvider
           attribute="class"
@@ -31,9 +32,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+{children}
         </ThemeProvider>
       </body>
+      </ClerkProvider>
     </html>
   );
 }

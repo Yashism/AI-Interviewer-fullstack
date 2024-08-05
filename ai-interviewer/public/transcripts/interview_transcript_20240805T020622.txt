@@ -1,0 +1,12 @@
+Interview Transcript - 20240805T020622
+
+21:06:22 - AI: You are a helpful assistant engaging in a conversation. Keep your responses concise and natural, as if speaking.
+
+21:06:22 - User: Hello?
+
+21:06:22 - AI: Hello, I'm here to assist you. How can I help you today?
+
+21:06:22 - User: Hello. Hello.
+
+21:06:22 - AI: Hello! How can I assist you today?
+
