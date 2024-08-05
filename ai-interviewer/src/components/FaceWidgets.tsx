@@ -12,10 +12,10 @@ type FaceWidgetsProps = {
   userVideoRef: React.RefObject<HTMLVideoElement>;
   isCameraOn: boolean;
   apiKey: string;
-  onEmotionUpdate?: (emotions: Emotion[]) => void; // Add this line
+  onEmotionUpdate?: (emotions: Emotion[]) => void;
 };
 
-export function FaceWidgets({ userVideoRef, isCameraOn, apiKey }: FaceWidgetsProps) {
+export function FaceWidgets({ userVideoRef, isCameraOn, apiKey, onEmotionUpdate }: FaceWidgetsProps) {
   const socketRef = useRef<WebSocket | null>(null);
   const recorderRef = useRef<VideoRecorder | null>(null);
   const photoRef = useRef<HTMLCanvasElement | null>(null);
@@ -50,20 +50,21 @@ export function FaceWidgets({ userVideoRef, isCameraOn, apiKey }: FaceWidgetsPro
     if (socket && socket.readyState === WebSocket.OPEN) {
       console.log("Socket already exists, will not create");
     } else {
-      const baseUrl = getApiUrlWs("production"); // Assuming production environment
+      // Remove the "production" argument and call getApiUrlWs without arguments
+      const baseUrl = getApiUrlWs();
       const endpointUrl = `${baseUrl}/v0/stream/models`;
       const socketUrl = `${endpointUrl}?apikey=${apiKey}`;
       console.log(`Connecting to websocket... (using ${endpointUrl})`);
       setStatus(`Connecting to server...`);
 
-      const socket = new WebSocket(socketUrl);
+      const newSocket = new WebSocket(socketUrl);
 
-      socket.onopen = socketOnOpen;
-      socket.onmessage = socketOnMessage;
-      socket.onclose = socketOnClose;
-      socket.onerror = socketOnError;
+      newSocket.onopen = socketOnOpen;
+      newSocket.onmessage = socketOnMessage;
+      newSocket.onclose = socketOnClose;
+      newSocket.onerror = socketOnError;
 
-      socketRef.current = socket;
+      socketRef.current = newSocket;
     }
   }
 
@@ -103,6 +104,9 @@ export function FaceWidgets({ userVideoRef, isCameraOn, apiKey }: FaceWidgetsPro
       if (dataIndex === 0) {
         const newEmotions = pred.emotions;
         setEmotions(newEmotions);
+        if (onEmotionUpdate) {
+          onEmotionUpdate(newEmotions);
+        }
       }
     });
     setTrackedFaces(newTrackedFaces);
