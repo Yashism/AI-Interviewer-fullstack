@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { FaqElement } from "@/components/F&q";
 import { ModeToggle } from "@/app/_components/toggle";
+import Loading  from "@components/Loading"
 
 const Help = () => {
   // const { theme } = useTheme();
@@ -31,7 +32,7 @@ const Help = () => {
   }, [isLoaded, userId, router]);
 
   if (!isLoaded || !userId) {
-    return <div>Loading...</div>;
+    return <div><Loading/></div>;
   }
 
   return (

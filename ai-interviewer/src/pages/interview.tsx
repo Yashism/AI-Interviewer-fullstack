@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ResumeUploader from "@/components/ResumeUploader";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/router";
+import Loading  from "@components/Loading"
 
 const Interview = () => {
   const { isLoaded, userId } = useAuth();
@@ -14,7 +15,7 @@ const Interview = () => {
   }, [isLoaded, userId, router]);
 
   if (!isLoaded || !userId) {
-    return <div>Loading...</div>;
+    return <div><Loading/></div>;
   }
 
   return (
