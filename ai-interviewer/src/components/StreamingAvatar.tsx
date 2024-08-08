@@ -444,7 +444,7 @@ export default function StreamingAvatar() {
               <Spinner size="lg" color="default" />
             )}
           </div>
-          <motion.div 
+          {/* <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: isCameraOn ? 1 : 0 }}
             transition={{ duration: 0.3 }}
@@ -457,7 +457,7 @@ export default function StreamingAvatar() {
               playsInline
               className="w-full h-full object-cover"
             />
-          </motion.div>
+          </motion.div> */}
         </div>
         <AnimatePresence>
           {isChatOpen && (

@@ -4,6 +4,7 @@ import { Mic, MicOff, Phone, Video, VideoOff } from "lucide-react";
 import { Toggle } from "./ui/toggle";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { useEffect, useState, useRef } from "react";
+import { DraggableVideo } from "./DraggableVideo";
 import {
   CONNECTION_STATE,
   LiveTranscriptionEvent,
@@ -181,11 +182,13 @@ export default function Controls({
 
   return (
     <>
+         <DraggableVideo isCameraOn={isCameraOn} toggleCamera={toggleCamera} />
     <div className={cn("fixed bottom-0 left-0 w-full p-4 flex items-center justify-center")}>
       <div className="p-4 bg-card border border-border rounded-lg shadow-sm flex items-center gap-4">
         <Toggle pressed={isCameraOn} onPressedChange={toggleCamera}>
           {isCameraOn ? (
-            <Video className="size-4" />
+              <Video className="size-4" />          
+            
           ) : (
             <VideoOff className="size-4" />
           )}
@@ -220,8 +223,8 @@ export default function Controls({
           <span>End Call</span>
         </Button>
       </div>
-      <div className="absolute top-[-30px] left-0 w-full text-center">
-      </div>
+      {/* <div className="absolute top-[-30px] left-0 w-full text-center">
+      </div> */}
     </div>
     <Dialog open={isEndCallDialogOpen} onOpenChange={setIsEndCallDialogOpen}>
     <DialogContent>
