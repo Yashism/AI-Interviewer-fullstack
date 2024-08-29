@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import ApiSettings from "./settings/Apisettings";
 import InterviewSettings from "./settings/InterviewSettings";
 import { useAuth } from "@clerk/nextjs";
+import Loading from "@components/Loading"
 
 export function Settings() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export function Settings() {
   }, [isLoaded, userId, router]);
 
   if (!isLoaded || !userId) {
-    return <div>Loading...</div>;
+    return <div><Loading/></div>;
   }
 
   const renderContent = () => {

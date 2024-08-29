@@ -20,6 +20,8 @@ import { FaceWidgets } from "./FaceWidgets";
 import { Descriptor } from "./Descriptor";
 import { Emotion } from "../lib/data/emotion";
 import FeedbackReport from './FeedbackReport';
+import { None } from "@/lib/utilities/typeUtilities";
+import { getEmotionDescriptor } from "@/lib/utilities/emotionUtilities";
 
 export default function StreamingAvatar() {
   const router = useRouter();
@@ -236,7 +238,7 @@ export default function StreamingAvatar() {
 
   const handleSpeechEnd = (transcript: string) => {
     const overallEmotion = createDescription(currentEmotions);
-    setEmotionLog(prevLog => [...prevLog, { transcript, emotion: overallEmotion }]);
+    setEmotionLog(prevLog => [...prevLog, {timestamp: Date.now(), transcript, emotion: overallEmotion }]);
   };
 
   const createDescription = (emotions: Emotion[]): string => {
@@ -444,7 +446,7 @@ export default function StreamingAvatar() {
               <Spinner size="lg" color="default" />
             )}
           </div>
-          <motion.div 
+          {/* <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: isCameraOn ? 1 : 0 }}
             transition={{ duration: 0.3 }}
@@ -457,7 +459,7 @@ export default function StreamingAvatar() {
               playsInline
               className="w-full h-full object-cover"
             />
-          </motion.div>
+          </motion.div> */}
         </div>
         <AnimatePresence>
           {isChatOpen && (
