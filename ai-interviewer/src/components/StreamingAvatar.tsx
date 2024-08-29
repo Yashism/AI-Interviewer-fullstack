@@ -20,6 +20,8 @@ import { FaceWidgets } from "./FaceWidgets";
 import { Descriptor } from "./Descriptor";
 import { Emotion } from "../lib/data/emotion";
 import FeedbackReport from './FeedbackReport';
+import { None } from "@/lib/utilities/typeUtilities";
+import { getEmotionDescriptor } from "@/lib/utilities/emotionUtilities";
 
 export default function StreamingAvatar() {
   const router = useRouter();
@@ -236,7 +238,7 @@ export default function StreamingAvatar() {
 
   const handleSpeechEnd = (transcript: string) => {
     const overallEmotion = createDescription(currentEmotions);
-    setEmotionLog(prevLog => [...prevLog, { transcript, emotion: overallEmotion }]);
+    setEmotionLog(prevLog => [...prevLog, {timestamp: Date.now(), transcript, emotion: overallEmotion }]);
   };
 
   const createDescription = (emotions: Emotion[]): string => {
