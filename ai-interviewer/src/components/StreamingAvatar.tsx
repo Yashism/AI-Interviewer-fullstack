@@ -472,7 +472,7 @@ export default function StreamingAvatar() {
               <FaceWidgets 
                 userVideoRef={userVideoRef}
                 isCameraOn={isCameraOn}
-                apiKey={'5clXGcclSBXfhERWNWBYx9GOgnPvzAruKJ3F5q6zJUbEui4j'}
+                apiKey={'hzTh1f0x6mm1N0i1GjkbKHFWXilJ7SpsEPbarRkadr7CqjZg'}
               />
               <motion.div
                 layoutScroll
@@ -514,7 +514,7 @@ export default function StreamingAvatar() {
       <FaceWidgets 
         userVideoRef={userVideoRef}
         isCameraOn={isCameraOn}
-        apiKey={'5clXGcclSBXfhERWNWBYx9GOgnPvzAruKJ3F5q6zJUbEui4j'}
+        apiKey={'hzTh1f0x6mm1N0i1GjkbKHFWXilJ7SpsEPbarRkadr7CqjZg'}
         onEmotionUpdate={handleEmotionUpdate}
       />
       <Descriptor emotions={currentEmotions} />

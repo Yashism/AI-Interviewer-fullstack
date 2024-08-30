@@ -1,0 +1,26 @@
+{
+  "overall_score": 50,
+  "confidence_score": 30,
+  "strengths": ["Concise responses", "Knowledge of Python", "Polite interaction"],
+  "weaknesses": ["Lack of enthusiasm", "Missing details in response", "Confusion"],
+  "questions": [
+    {
+      "question_asked": "You are a helpful assistant engaging in a conversation. Keep your responses concise and natural, as if speaking.",
+      "user_response": "Hello. How are you?",
+      "ideal_answer": "Hello. I understand the importance of clear, concise communication. I'm ready to answer any questions that you may have.",
+      "emotions_displayed": ["Calm Concentration", "Interested Calmness"]
+    },
+    {
+      "question_asked": "What interests you most about the position you are applying for?",
+      "user_response": "I'm well interested in, Python, and I've been working on it since",
+      "ideal_answer": "The position attracts me because it allows me to leverage my strong Python skills that I've been honing throughout my career. I'm particularly interested in the opportunity to work on unique, challenging projects that this role provides.",
+      "emotions_displayed": ["Bored Calmness", "Confused Interest", "Disappointed Boredom"]
+    },
+    {
+      "question_asked": "That's great to hear! Could you please elaborate on your experience with Python and how you have applied it in your previous projects or roles?",
+      "user_response": "N/A",
+      "ideal_answer": "During my previous role, I developed several Python-based applications that streamlined workflow processes. I also have experience with data analysis using Python libraries such as pandas and NumPy. I have utilized my Python skills in various projects to automate tasks, analyze data, and build resilient systems.",
+      "emotions_displayed": ["Confusion", "Pained Tiredness", "Disappointed Sadness"]
+    }
+  ]
+}

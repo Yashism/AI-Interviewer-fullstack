@@ -85,7 +85,7 @@ export default function Controls({
 
     const onTranscript = (data: LiveTranscriptionEvent) => {
       const { is_final, speech_final } = data;
-      const thisCaption = data.channel.alternatives[0].transcript;
+      const thisCaption = data.channel.alternatives[0]?.transcript || "";
 
       console.log("Received transcript:", thisCaption, "Is final:", is_final, "Speech final:", speech_final);
 
